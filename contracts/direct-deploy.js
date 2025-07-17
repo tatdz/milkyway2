@@ -89,6 +89,7 @@ async function deployContract() {
     const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     
     console.log("Deployer address:", wallet.address);
+    console.log("Expected address: 5D5d1d6uiscBuzLp6UuYEuZmyt6ciAhbfQq3oeA4dhFJaqTV");
     
     // Check balance
     const balance = await provider.getBalance(wallet.address);

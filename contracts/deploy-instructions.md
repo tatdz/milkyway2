@@ -6,7 +6,7 @@ The smart contract has been prepared and is ready for deployment to Passet chain
 
 ### Prerequisites
 
-1. **Funded Wallet**: The deployer wallet `0x72Db8ea867DfA2Be1A8d6009367b6D4647B5ceA5` needs to be funded with Passet native tokens for gas fees.
+1. **Funded Wallet**: The deployer wallet `5D5d1d6uiscBuzLp6UuYEuZmyt6ciAhbfQq3oeA4dhFJaqTV` needs to be funded with Passet native tokens for gas fees.
 
 2. **Network Details**: 
    - Chain ID: 88888 (Passet testnet)
