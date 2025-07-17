@@ -40,7 +40,6 @@ Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-p
 ### Prerequisites
 
 - Node.js 18+ and npm
-- PostgreSQL database (or Neon serverless)
 - SubWallet or Polkadot.js browser extension
 
 ### Installation
@@ -56,23 +55,14 @@ Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-p
    npm install
    ```
 
-3. **Configure environment**
-   ```bash
-   # Create .env file with your database URL
-   echo "DATABASE_URL=your_postgresql_connection_string" > .env
-   ```
-
-4. **Run database migrations**
-   ```bash
-   npm run db:push
-   ```
-
-5. **Start development server**
+3. **Start the application**
    ```bash
    npm run dev
    ```
 
 The application will be available at `http://localhost:5001`
+
+The app uses in-memory storage for development - no database setup required! Data persists during your session and resets when you restart the server.
 
 ## 🏗️ Architecture
 
@@ -137,8 +127,8 @@ milkyway2/
 
 - `npm run dev` - Start development server with hot reloading
 - `npm run build` - Build production application
-- `npm run db:push` - Push database schema changes
-- `npm run db:studio` - Open Drizzle Studio for database management
+
+For production deployment, you can optionally configure a PostgreSQL database via the `DATABASE_URL` environment variable. The app will automatically use database storage if available, otherwise it falls back to in-memory storage.
 
 ### Risk Classification System
 
