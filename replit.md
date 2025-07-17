@@ -16,6 +16,9 @@ Preferred communication style: Simple, everyday language.
 - ✓ Added detailed risk-specific recommendations for validator management
 - ✓ Implemented severity-coded action items (critical/warning/info) with external resource links
 - ✓ Added comprehensive README.md for GitHub repository with full project documentation
+- ✓ Implemented validator encrypted messaging system with AES-256 encryption and Ed25519 signatures
+- ✓ Created validator onboarding page with key management and secure message submission
+- ✓ Added governance unlock functionality for public message decryption
 
 ## System Architecture
 
@@ -59,6 +62,13 @@ Preferred communication style: Simple, everyday language.
 - **Multi-Wallet Support**: SubWallet and Polkadot.js extension compatibility
 - **Account Management**: Persistent wallet connections with localStorage
 - **Transaction Signing**: Secure interaction with blockchain networks
+
+### 5. Validator Encrypted Messaging System
+- **AES-256 Encryption**: Validators encrypt messages with group symmetric keys before on-chain submission
+- **Ed25519 Digital Signatures**: All messages cryptographically signed for authenticity verification
+- **Key Management Interface**: Secure key generation, export/import, and storage functionality
+- **Governance-Controlled Decryption**: Messages unlock publicly after designated on-chain events
+- **Immutable Storage**: Encrypted messages stored permanently on Passet chain for transparency
 
 ## Data Flow
 

@@ -18,6 +18,12 @@ Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-p
 - **One-Human-One-Signal**: Ensures authentic reporting through proof verification
 - **Nullifier Protection**: Prevents double-spending while maintaining complete anonymity
 
+### 🔐 Validator Encrypted Messaging
+- **Group Symmetric Encryption**: Validators securely post encrypted messages using AES-256
+- **Ed25519 Digital Signatures**: All messages signed and verified on-chain for authenticity
+- **Governance Unlock Events**: Messages become publicly decryptable after designated on-chain events
+- **Immutable Storage**: Messages stored permanently on Passet chain with full transparency post-unlock
+
 ### 🏛️ Governance Integration
 - **OpenGov Referenda Tracking**: Real-time monitoring of Polkadot governance proposals
 - **Voting Analytics**: Support percentage and participation metrics

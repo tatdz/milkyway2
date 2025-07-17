@@ -3,14 +3,20 @@ import {
   validatorEvents, 
   incidentReports, 
   referenda,
+  encryptedMessages,
+  validatorKeys,
   type Validator, 
   type ValidatorEvent, 
   type IncidentReport, 
   type Referendum,
+  type EncryptedMessage,
+  type ValidatorKey,
   type InsertValidator, 
   type InsertValidatorEvent, 
   type InsertIncidentReport, 
-  type InsertReferendum 
+  type InsertReferendum,
+  type InsertEncryptedMessage,
+  type InsertValidatorKey
 } from "@shared/schema";
 
 export interface IStorage {
@@ -39,6 +45,17 @@ export interface IStorage {
   getReferendum(referendumId: number): Promise<Referendum | undefined>;
   createReferendum(referendum: InsertReferendum): Promise<Referendum>;
   updateReferendum(referendumId: number, referendum: Partial<InsertReferendum>): Promise<Referendum | undefined>;
+
+  // Encrypted Messages
+  getEncryptedMessages(): Promise<EncryptedMessage[]>;
+  getEncryptedMessagesByGroup(groupKeyId: string): Promise<EncryptedMessage[]>;
+  createEncryptedMessage(message: InsertEncryptedMessage): Promise<EncryptedMessage>;
+  unlockMessages(groupKeyId: string): Promise<EncryptedMessage[]>;
+
+  // Validator Keys
+  getValidatorKeys(): Promise<ValidatorKey[]>;
+  getValidatorKey(validatorAddress: string, groupKeyId: string): Promise<ValidatorKey | undefined>;
+  createValidatorKey(key: InsertValidatorKey): Promise<ValidatorKey>;
 }
 
 export class MemStorage implements IStorage {
@@ -46,20 +63,28 @@ export class MemStorage implements IStorage {
   private validatorEvents: Map<number, ValidatorEvent>;
   private incidentReports: Map<number, IncidentReport>;
   private referenda: Map<number, Referendum>;
+  private encryptedMessages: Map<number, EncryptedMessage>;
+  private validatorKeys: Map<number, ValidatorKey>;
   private currentValidatorId: number;
   private currentEventId: number;
   private currentReportId: number;
   private currentReferendumId: number;
+  private currentMessageId: number;
+  private currentKeyId: number;
 
   constructor() {
     this.validators = new Map();
     this.validatorEvents = new Map();
     this.incidentReports = new Map();
     this.referenda = new Map();
+    this.encryptedMessages = new Map();
+    this.validatorKeys = new Map();
     this.currentValidatorId = 1;
     this.currentEventId = 1;
     this.currentReportId = 1;
     this.currentReferendumId = 1;
+    this.currentMessageId = 1;
+    this.currentKeyId = 1;
 
     // Initialize with sample data for demonstration
     this.initializeSampleData();
@@ -297,6 +322,61 @@ export class MemStorage implements IStorage {
     const updated = { ...referendum, ...updateData, updatedAt: new Date() };
     this.referenda.set(referendum.id, updated);
     return updated;
+  }
+
+  // Encrypted Messages methods
+  async getEncryptedMessages(): Promise<EncryptedMessage[]> {
+    return Array.from(this.encryptedMessages.values());
+  }
+
+  async getEncryptedMessagesByGroup(groupKeyId: string): Promise<EncryptedMessage[]> {
+    return Array.from(this.encryptedMessages.values()).filter(m => m.groupKeyId === groupKeyId);
+  }
+
+  async createEncryptedMessage(message: InsertEncryptedMessage): Promise<EncryptedMessage> {
+    const newMessage: EncryptedMessage = {
+      id: this.currentMessageId++,
+      ciphertext: message.ciphertext,
+      signature: message.signature,
+      senderAddress: message.senderAddress,
+      blockNumber: message.blockNumber ?? null,
+      transactionHash: message.transactionHash,
+      timestamp: new Date(),
+      isUnlocked: message.isUnlocked ?? false,
+      groupKeyId: message.groupKeyId,
+    };
+    this.encryptedMessages.set(newMessage.id, newMessage);
+    return newMessage;
+  }
+
+  async unlockMessages(groupKeyId: string): Promise<EncryptedMessage[]> {
+    const messages = Array.from(this.encryptedMessages.values()).filter(m => m.groupKeyId === groupKeyId);
+    messages.forEach(message => {
+      message.isUnlocked = true;
+      this.encryptedMessages.set(message.id, message);
+    });
+    return messages;
+  }
+
+  // Validator Keys methods
+  async getValidatorKeys(): Promise<ValidatorKey[]> {
+    return Array.from(this.validatorKeys.values());
+  }
+
+  async getValidatorKey(validatorAddress: string, groupKeyId: string): Promise<ValidatorKey | undefined> {
+    return Array.from(this.validatorKeys.values()).find(
+      k => k.validatorAddress === validatorAddress && k.groupKeyId === groupKeyId
+    );
+  }
+
+  async createValidatorKey(key: InsertValidatorKey): Promise<ValidatorKey> {
+    const newKey: ValidatorKey = {
+      id: this.currentKeyId++,
+      ...key,
+      createdAt: new Date(),
+    };
+    this.validatorKeys.set(newKey.id, newKey);
+    return newKey;
   }
 }
 

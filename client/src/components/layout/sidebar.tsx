@@ -6,7 +6,8 @@ import {
   Vote, 
   Shield, 
   FileText, 
-  Bell 
+  Bell,
+  MessageSquareCode
 } from "lucide-react";
 import Logo from "@/components/ui/logo";
 
@@ -15,6 +16,7 @@ const navigation = [
   { name: "Validators", href: "/validators", icon: Users },
   { name: "Governance", href: "/governance", icon: Vote },
   { name: "Incident Reports", href: "/reports", icon: Shield },
+  { name: "Validator Messaging", href: "/validator-onboarding", icon: MessageSquareCode },
   { name: "Documentation", href: "/documentation", icon: FileText },
 ];
 

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertValidatorSchema, insertIncidentReportSchema, insertReferendumSchema } from "@shared/schema";
+import { insertValidatorSchema, insertIncidentReportSchema, insertReferendumSchema, insertEncryptedMessageSchema, insertValidatorKeySchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check
@@ -168,6 +168,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, data: networkStatus });
     } catch (error) {
       res.status(500).json({ success: false, error: "Failed to fetch network status" });
+    }
+  });
+
+  // Encrypted Messages endpoints
+  app.get("/api/messages", async (req, res) => {
+    try {
+      const groupKeyId = req.query.groupId as string;
+      const messages = groupKeyId 
+        ? await storage.getEncryptedMessagesByGroup(groupKeyId)
+        : await storage.getEncryptedMessages();
+      res.json({ success: true, data: messages });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to fetch messages" });
+    }
+  });
+
+  app.post("/api/messages", async (req, res) => {
+    try {
+      const messageData = insertEncryptedMessageSchema.parse(req.body);
+      const message = await storage.createEncryptedMessage(messageData);
+      res.status(201).json({ success: true, data: message });
+    } catch (error) {
+      res.status(400).json({ success: false, error: "Invalid message data" });
+    }
+  });
+
+  app.post("/api/messages/unlock/:groupId", async (req, res) => {
+    try {
+      const { groupId } = req.params;
+      const unlockedMessages = await storage.unlockMessages(groupId);
+      res.json({ success: true, data: unlockedMessages });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to unlock messages" });
+    }
+  });
+
+  // Validator Keys endpoints
+  app.get("/api/validator-keys", async (req, res) => {
+    try {
+      const keys = await storage.getValidatorKeys();
+      res.json({ success: true, data: keys });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to fetch validator keys" });
+    }
+  });
+
+  app.post("/api/validator-keys", async (req, res) => {
+    try {
+      const keyData = insertValidatorKeySchema.parse(req.body);
+      const key = await storage.createValidatorKey(keyData);
+      res.status(201).json({ success: true, data: key });
+    } catch (error) {
+      res.status(400).json({ success: false, error: "Invalid key data" });
+    }
+  });
+
+  app.get("/api/validator-keys/:address/:groupId", async (req, res) => {
+    try {
+      const { address, groupId } = req.params;
+      const key = await storage.getValidatorKey(address, groupId);
+      if (!key) {
+        return res.status(404).json({ success: false, error: "Validator key not found" });
+      }
+      res.json({ success: true, data: key });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to fetch validator key" });
     }
   });
 
