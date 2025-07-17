@@ -1,5 +1,11 @@
 require("@nomicfoundation/hardhat-toolbox");
 
+// Fix for ESM compatibility issue
+const { Buffer } = require('buffer');
+if (typeof globalThis.Buffer === 'undefined') {
+  globalThis.Buffer = Buffer;
+}
+
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: {
@@ -13,10 +19,11 @@ module.exports = {
   },
   networks: {
     passet: {
-      url: process.env.PASSET_RPC_URL || "https://rpc.passet.network",
+      url: process.env.PASSET_RPC_URL,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 1234, // Replace with actual Passet chain ID
-      gasPrice: 20000000000, // 20 gwei
+      chainId: 88888, // Passet testnet chain ID
+      gasPrice: 1000000000, // 1 gwei
+      gas: 5000000
     },
     localhost: {
       url: "http://127.0.0.1:8545"

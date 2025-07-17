@@ -23,20 +23,25 @@ async function main() {
   const zkAttestationAddress = await zkAttestation.getAddress();
   console.log("zkAttestation deployed to:", zkAttestationAddress);
 
-  // Deploy ValidatorMessaging contract
-  console.log("\nDeploying ValidatorMessaging...");
-  const ValidatorMessaging = await ethers.deployContract("ValidatorMessaging", [
-    deployer.address // Deployer as initial governance
+  // Deploy EncryptedGroupMessages contract
+  console.log("\nDeploying EncryptedGroupMessages...");
+  
+  // Generate a sample Ed25519 public key (32 bytes)
+  // In production, this should be the actual group's Ed25519 public key
+  const groupPubKey = "0x" + "a".repeat(64); // 32 bytes in hex
+  
+  const EncryptedGroupMessages = await ethers.deployContract("EncryptedGroupMessages", [
+    groupPubKey
   ]);
-  await ValidatorMessaging.waitForDeployment();
-  const validatorMessagingAddress = await ValidatorMessaging.getAddress();
-  console.log("ValidatorMessaging deployed to:", validatorMessagingAddress);
+  await EncryptedGroupMessages.waitForDeployment();
+  const encryptedMessagesAddress = await EncryptedGroupMessages.getAddress();
+  console.log("EncryptedGroupMessages deployed to:", encryptedMessagesAddress);
 
   // Save deployment addresses
   const deploymentInfo = {
     network: hre.network.name,
     zkAttestation: zkAttestationAddress,
-    validatorMessaging: validatorMessagingAddress,
+    encryptedGroupMessages: encryptedMessagesAddress,
     semaphore: semaphoreAddress,
     deployer: deployer.address,
     timestamp: new Date().toISOString(),
@@ -59,10 +64,10 @@ async function main() {
         constructorArguments: [semaphoreAddress || deployer.address],
       });
       
-      console.log("Verifying ValidatorMessaging...");
+      console.log("Verifying EncryptedGroupMessages...");
       await hre.run("verify:verify", {
-        address: validatorMessagingAddress,
-        constructorArguments: [deployer.address],
+        address: encryptedMessagesAddress,
+        constructorArguments: [groupPubKey],
       });
     } catch (error) {
       console.log("Verification failed:", error.message);
@@ -77,7 +82,7 @@ main()
     console.log("\n✅ Deployment completed successfully!");
     console.log("Save these addresses for your frontend configuration:");
     console.log(`zkAttestation: ${deploymentInfo.zkAttestation}`);
-    console.log(`ValidatorMessaging: ${deploymentInfo.validatorMessaging}`);
+    console.log(`EncryptedGroupMessages: ${deploymentInfo.encryptedGroupMessages}`);
     process.exit(0);
   })
   .catch((error) => {

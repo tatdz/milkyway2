@@ -23,6 +23,7 @@ Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-p
 - **Ed25519 Digital Signatures**: All messages signed and verified on-chain for authenticity
 - **Governance Unlock Events**: Messages become publicly decryptable after designated on-chain events
 - **Immutable Storage**: Messages stored permanently on Passet chain with full transparency post-unlock
+- **Smart Contract Integration**: EncryptedGroupMessages contract deployed on Passet chain for decentralized storage
 
 ### 🏛️ Governance Integration
 - **OpenGov Referenda Tracking**: Real-time monitoring of Polkadot governance proposals

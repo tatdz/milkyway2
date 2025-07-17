@@ -11,7 +11,8 @@ import { useWallet } from "@/hooks/use-wallet";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { generateKeys, encryptMessage, signMessage, decryptMessage, exportKeys, importKeys, type CryptoKeys } from "@/lib/crypto";
-import { Key, Send, Download, Upload, Shield, Lock, Unlock } from "lucide-react";
+import { useEncryptedMessagesContract } from "@/lib/contract";
+import { Key, Send, Download, Upload, Shield, Lock, Unlock, ExternalLink } from "lucide-react";
 import type { EncryptedMessage, ValidatorKey } from "@shared/schema";
 
 export default function ValidatorOnboarding() {
@@ -20,6 +21,10 @@ export default function ValidatorOnboarding() {
   const [groupKeyId, setGroupKeyId] = useState("validator-group-2025");
   const [keysJson, setKeysJson] = useState("");
   const [isUnlocked, setIsUnlocked] = useState(false);
+  const [useBlockchain, setUseBlockchain] = useState(false);
+  const [contractTxHash, setContractTxHash] = useState("");
+  
+  const contract = useEncryptedMessagesContract('passet');
   
   const { isConnected, account } = useWallet();
   const { toast } = useToast();
@@ -152,10 +157,37 @@ export default function ValidatorOnboarding() {
       // Sign the ciphertext
       const signature = await signMessage(ciphertext, keys.signingPrivateKey);
       
-      // Generate mock transaction hash (in production, this would come from actual blockchain transaction)
-      const transactionHash = `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
-        .map(b => b.toString(16).padStart(2, '0')).join('')}`;
+      let transactionHash = "";
+      
+      if (useBlockchain) {
+        // Submit to smart contract on Passet chain
+        try {
+          await contract.connect();
+          transactionHash = await contract.postMessage(ciphertext, signature);
+          setContractTxHash(transactionHash);
+          
+          toast({
+            title: "On-Chain Submission Successful",
+            description: `Message posted to Passet chain. TX: ${transactionHash.slice(0, 10)}...`,
+          });
+        } catch (error) {
+          console.error("Blockchain submission failed:", error);
+          toast({
+            title: "Blockchain Submission Failed",
+            description: "Falling back to database storage. Check wallet connection.",
+            variant: "destructive",
+          });
+          // Fall back to database storage
+          transactionHash = `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
+            .map(b => b.toString(16).padStart(2, '0')).join('')}`;
+        }
+      } else {
+        // Generate mock transaction hash for database storage
+        transactionHash = `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
+          .map(b => b.toString(16).padStart(2, '0')).join('')}`;
+      }
 
+      // Also store in database for backup/indexing
       await submitMessageMutation.mutateAsync({
         ciphertext,
         signature,
@@ -287,30 +319,60 @@ export default function ValidatorOnboarding() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-400">Status Checks:</p>
-                  <div className="flex items-center space-x-4 text-xs">
-                    <Badge variant={isConnected ? "default" : "secondary"}>
-                      {isConnected ? "Wallet Connected" : "Wallet Required"}
-                    </Badge>
-                    <Badge variant={keys ? "default" : "secondary"}>
-                      {keys ? "Keys Ready" : "Keys Required"}
-                    </Badge>
-                    <Badge variant={message.length > 10 ? "default" : "secondary"}>
-                      {message.length > 10 ? "Message Ready" : "Message Required"}
-                    </Badge>
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="useBlockchain"
+                    checked={useBlockchain}
+                    onChange={(e) => setUseBlockchain(e.target.checked)}
+                    className="rounded"
+                  />
+                  <Label htmlFor="useBlockchain" className="text-sm text-slate-300">
+                    Submit to Passet blockchain (requires funded wallet)
+                  </Label>
                 </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm text-slate-400">Status Checks:</p>
+                    <div className="flex items-center space-x-4 text-xs">
+                      <Badge variant={isConnected ? "default" : "secondary"}>
+                        {isConnected ? "Wallet Connected" : "Wallet Required"}
+                      </Badge>
+                      <Badge variant={keys ? "default" : "secondary"}>
+                        {keys ? "Keys Ready" : "Keys Required"}
+                      </Badge>
+                      <Badge variant={message.length > 10 ? "default" : "secondary"}>
+                        {message.length > 10 ? "Message Ready" : "Message Required"}
+                      </Badge>
+                      {useBlockchain && (
+                        <Badge variant="outline" className="text-xs">
+                          Blockchain Mode
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
 
-                <Button 
-                  onClick={handleSubmitMessage}
-                  disabled={!isConnected || !keys || !message.trim() || submitMessageMutation.isPending}
-                  className="bg-primary hover:bg-indigo-700"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  {submitMessageMutation.isPending ? "Encrypting..." : "Encrypt & Submit"}
-                </Button>
+                  <Button 
+                    onClick={handleSubmitMessage}
+                    disabled={!isConnected || !keys || !message.trim() || submitMessageMutation.isPending}
+                    className="bg-primary hover:bg-indigo-700"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    {submitMessageMutation.isPending ? "Encrypting..." : "Encrypt & Submit"}
+                  </Button>
+                </div>
+                
+                {contractTxHash && (
+                  <div className="p-2 bg-slate-800 rounded text-xs">
+                    <p className="text-slate-400 mb-1">Last Transaction:</p>
+                    <div className="flex items-center space-x-2">
+                      <code className="text-green-400">{contractTxHash.slice(0, 20)}...</code>
+                      <ExternalLink className="w-3 h-3 text-slate-400" />
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
