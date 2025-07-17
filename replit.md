@@ -8,6 +8,15 @@ Milkyway2 is a decentralized Web3 application designed for transparent, privacy-
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+**January 17, 2025**
+- ✓ Fixed "View suggested action" buttons with comprehensive suggestion modal system
+- ✓ Created new Milkyway2 logo with Silkscreen font (normal weight) and animated galaxy icon
+- ✓ Added detailed risk-specific recommendations for validator management
+- ✓ Implemented severity-coded action items (critical/warning/info) with external resource links
+- ✓ Added comprehensive README.md for GitHub repository with full project documentation
+
 ## System Architecture
 
 ### Frontend Architecture
