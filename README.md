@@ -72,7 +72,7 @@ Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-p
    npm run dev
    ```
 
-The application will be available at `http://localhost:5000`
+The application will be available at `http://localhost:5001`
 
 ## 🏗️ Architecture
 
