@@ -171,7 +171,7 @@ Milkyway2 uses the Semaphore protocol to enable completely anonymous incident re
 4. **Smart Contract Verification**: zkAttestation contract on Passet chain validates all proofs
 
 ### Smart Contract Integration
-- **Contract Address**: `0x742d35Cc6C9B6C9A07f6aC2b2a58fC8CcF3f9D4B` (Passet Chain)
+- **Smart Contracts**: EncryptedGroupMessages and zkAttestation deployed on Passet Chain
 - **Verification Links**: Integrated block explorer links for transparency
 - **Sybil Resistance**: One human, one signal enforcement through on-chain verification
 

@@ -4,7 +4,7 @@ const { u8aToHex } = require("@polkadot/util");
 
 // Convert Substrate address to check if we have the right key
 function analyzeAddress() {
-  const substrateAddress = "5D5d1d6uiscBuzLp6UuYEuZmyt6ciAhbfQq3oeA4dhFJaqTV";
+  const substrateAddress = "REPLACE_WITH_YOUR_SUBSTRATE_ADDRESS";
   
   try {
     // Decode the substrate address to get the public key

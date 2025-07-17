@@ -4,17 +4,11 @@
 The EncryptedGroupMessages smart contract is ready for deployment to Passet chain.
 
 ## Wallet Information
-- **Current Ethereum Address**: `0x72Db8ea867DfA2Be1A8d6009367b6D4647B5ceA5`
-- **Requested Substrate Address**: `5D5d1d6uiscBuzLp6UuYEuZmyt6ciAhbfQq3oeA4dhFJaqTV`
 - **Current Balance**: 0 ETH on Passet chain
+- **Status**: Requires funding for deployment
 
-## Two Options to Proceed:
-
-### Option 1: Fund Current Wallet
-Fund the Ethereum address `0x72Db8ea867DfA2Be1A8d6009367b6D4647B5ceA5` with Passet tokens and deploy immediately.
-
-### Option 2: Use Specific Substrate Key
-Provide the private key that corresponds to Substrate address `5D5d1d6uiscBuzLp6UuYEuZmyt6ciAhbfQq3oeA4dhFJaqTV`.
+## To Proceed:
+Fund the deployer wallet with Passet tokens and deploy immediately.
 
 ## Deployment Command
 Once funded, run:
@@ -26,7 +20,7 @@ node direct-deploy.js
 ## Expected Output After Funding
 ```
 🚀 Starting deployment to Passet chain...
-Deployer address: 0x[ADDRESS]
+Deployer address: 0x[WALLET_ADDRESS]
 Deployer balance: X.XXX ETH
 ✅ Contract deployed successfully!
 📍 Contract address: 0x[CONTRACT_ADDRESS]

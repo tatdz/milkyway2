@@ -130,8 +130,7 @@ function createDeploymentSummary() {
   console.log("");
   console.log("🏗️  Contract: EncryptedGroupMessages");
   console.log("🌐 Target Network: Passet Chain");
-  console.log("💰 Deployer Wallet: 0x72Db8ea867DfA2Be1A8d6009367b6D4647B5ceA5");
-  console.log("📊 Expected Address: 5D5d1d6uiscBuzLp6UuYEuZmyt6ciAhbfQq3oeA4dhFJaqTV");
+  console.log("💰 Deployer Wallet: [Configure in environment variables]");
   console.log("");
   console.log("⚠️  STATUS: READY FOR DEPLOYMENT (Needs Wallet Funding)");
   console.log("");
