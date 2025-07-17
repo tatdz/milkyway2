@@ -80,7 +80,7 @@ export default function Logo({ className, size = "md", showIcon = true }: LogoPr
       <div className="flex flex-col">
         <h1 
           className={cn(
-            "font-bold tracking-tight text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text",
+            "font-normal tracking-tight text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text",
             sizes[size]
           )}
           style={{ fontFamily: "'Silkscreen', monospace" }}
