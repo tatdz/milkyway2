@@ -40,7 +40,7 @@ Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-p
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/milkyway2.git
+   git clone https://github.com/tatdz/milkyway2.git
    cd milkyway2
    ```
 
@@ -188,18 +188,6 @@ We welcome contributions! Here's how to get started:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- **Polkadot Foundation** for the robust blockchain infrastructure
-- **Semaphore Protocol** for privacy-preserving cryptographic primitives
-- **SubWallet Team** for excellent wallet integration support
-- **Replit Community** for development environment and deployment tools
-
-## 📞 Support
-
-- **Documentation**: Visit our [Documentation](./docs) page in the app
-- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/your-username/milkyway2/issues)
-- **Community**: Join our discussions in the project repository
 
 ---
 
