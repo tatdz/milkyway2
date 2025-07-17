@@ -1,6 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Shield } from "lucide-react";
+import { useWallet } from "@/hooks/use-wallet";
+import { useState } from "react";
+import ZKReportModal from "@/components/reports/zk-report-modal";
 import type { Validator } from "@shared/schema";
 
 interface AlertCardProps {
@@ -8,6 +12,9 @@ interface AlertCardProps {
 }
 
 export default function AlertCard({ validator }: AlertCardProps) {
+  const { isConnected } = useWallet();
+  const [showReportModal, setShowReportModal] = useState(false);
+
   const getRiskColor = (type: string) => {
     switch (type) {
       case "good":
@@ -65,11 +72,35 @@ export default function AlertCard({ validator }: AlertCardProps) {
           </Badge>
         </div>
         {validator.type !== 'good' && (
-          <div className="mt-3 pt-3 border-t border-slate-800">
-            <Button variant="outline" size="sm" className="text-slate-300 border-slate-600 hover:bg-slate-800">
-              View suggested action
-            </Button>
+          <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between">
+            <div className="space-x-2">
+              <Button variant="outline" size="sm" className="text-slate-300 border-slate-600 hover:bg-slate-800">
+                View suggested action
+              </Button>
+              {isConnected && (
+                <Button 
+                  onClick={() => setShowReportModal(true)}
+                  variant="outline" 
+                  size="sm" 
+                  className="text-purple-400 border-purple-400/30 hover:bg-purple-400/10"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Attest/Report
+                </Button>
+              )}
+            </div>
+            {!isConnected && validator.type === 'bad' && (
+              <p className="text-xs text-slate-400">Connect wallet to report incidents</p>
+            )}
           </div>
+        )}
+
+        {showReportModal && (
+          <ZKReportModal
+            isOpen={showReportModal}
+            onClose={() => setShowReportModal(false)}
+            validatorStash={validator.stash}
+          />
         )}
       </CardContent>
     </Card>

@@ -8,6 +8,7 @@ import Validators from "@/pages/validators";
 import Governance from "@/pages/governance";
 import Reports from "@/pages/reports";
 import Documentation from "@/pages/documentation";
+import Notifications from "@/pages/notifications";
 import Sidebar from "@/components/layout/sidebar";
 import { useEffect } from "react";
 
@@ -23,6 +24,7 @@ function Router() {
           <Route path="/governance" component={Governance} />
           <Route path="/reports" component={Reports} />
           <Route path="/documentation" component={Documentation} />
+          <Route path="/notifications" component={Notifications} />
           <Route>
             <div className="flex items-center justify-center min-h-screen">
               <div className="text-center">

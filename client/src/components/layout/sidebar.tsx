@@ -41,15 +41,15 @@ export default function Sidebar() {
             const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
             return (
               <Link key={item.name} href={item.href}>
-                <a className={cn(
-                  "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                <div className={cn(
+                  "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer",
                   isActive 
                     ? "bg-primary text-white" 
                     : "text-slate-300 hover:bg-slate-800 hover:text-white"
                 )}>
                   <item.icon className="w-5 h-5 mr-3" />
                   {item.name}
-                </a>
+                </div>
               </Link>
             );
           })}
@@ -61,10 +61,10 @@ export default function Sidebar() {
             Settings
           </div>
           <Link href="/notifications">
-            <a className="group flex items-center px-3 py-2 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition-colors">
+            <div className="group flex items-center px-3 py-2 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition-colors cursor-pointer">
               <Bell className="w-5 h-5 mr-3" />
               Notifications
-            </a>
+            </div>
           </Link>
         </div>
       </nav>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,24 +6,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, X } from "lucide-react";
+import { Shield, X, Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useWallet } from "@/hooks/use-wallet";
 
 interface ZKReportModalProps {
   isOpen: boolean;
   onClose: () => void;
+  validatorStash?: string;
 }
 
-export default function ZKReportModal({ isOpen, onClose }: ZKReportModalProps) {
+export default function ZKReportModal({ isOpen, onClose, validatorStash = "" }: ZKReportModalProps) {
   const [formData, setFormData] = useState({
-    validatorStash: "",
+    validatorStash: validatorStash,
     incidentType: "",
     description: "",
   });
   const [isGeneratingProof, setIsGeneratingProof] = useState(false);
-
+  const { isConnected, account } = useWallet();
   const { toast } = useToast();
+
+  // Update form data when validatorStash prop changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      validatorStash: validatorStash || prev.validatorStash
+    }));
+  }, [validatorStash]);
   const queryClient = useQueryClient();
 
   const submitReportMutation = useMutation({
@@ -63,6 +73,16 @@ export default function ZKReportModal({ isOpen, onClose }: ZKReportModalProps) {
     setIsGeneratingProof(true);
     
     try {
+      // Check wallet connection first
+      if (!isConnected || !account) {
+        toast({
+          title: "Wallet Not Connected",
+          description: "Please connect your wallet to submit a report.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Simulate ZK proof generation
       await new Promise(resolve => setTimeout(resolve, 2000));
       

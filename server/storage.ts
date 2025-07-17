@@ -174,8 +174,14 @@ export class MemStorage implements IStorage {
   async createValidator(insertValidator: InsertValidator): Promise<Validator> {
     const id = this.currentValidatorId++;
     const validator: Validator = { 
-      ...insertValidator, 
       id,
+      stash: insertValidator.stash,
+      type: insertValidator.type,
+      description: insertValidator.description,
+      commission: insertValidator.commission ?? 0,
+      uptime: insertValidator.uptime ?? 0,
+      slashed: insertValidator.slashed ?? false,
+      eventsCount: insertValidator.eventsCount ?? 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -210,9 +216,13 @@ export class MemStorage implements IStorage {
   async createValidatorEvent(insertEvent: InsertValidatorEvent): Promise<ValidatorEvent> {
     const id = this.currentEventId++;
     const event: ValidatorEvent = { 
-      ...insertEvent, 
       id,
+      validatorId: insertEvent.validatorId ?? null,
+      block: insertEvent.block,
+      event: insertEvent.event,
+      data: insertEvent.data ?? null,
       timestamp: new Date(),
+      hash: insertEvent.hash ?? null,
     };
     this.validatorEvents.set(id, event);
     return event;
@@ -230,8 +240,12 @@ export class MemStorage implements IStorage {
   async createIncidentReport(insertReport: InsertIncidentReport): Promise<IncidentReport> {
     const id = this.currentReportId++;
     const report: IncidentReport = { 
-      ...insertReport, 
       id,
+      validatorStash: insertReport.validatorStash,
+      incidentType: insertReport.incidentType,
+      description: insertReport.description ?? null,
+      nullifierHash: insertReport.nullifierHash,
+      proof: insertReport.proof ?? null,
       isVerified: false,
       createdAt: new Date(),
     };
@@ -260,8 +274,15 @@ export class MemStorage implements IStorage {
   async createReferendum(insertReferendum: InsertReferendum): Promise<Referendum> {
     const id = this.currentReferendumId++;
     const referendum: Referendum = { 
-      ...insertReferendum, 
       id,
+      referendumId: insertReferendum.referendumId,
+      title: insertReferendum.title,
+      description: insertReferendum.description ?? null,
+      track: insertReferendum.track ?? null,
+      status: insertReferendum.status,
+      support: insertReferendum.support ?? 0,
+      timeLeft: insertReferendum.timeLeft ?? null,
+      totalVotes: insertReferendum.totalVotes ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
