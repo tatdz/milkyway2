@@ -5,6 +5,7 @@ import { Shield } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
 import { useState } from "react";
 import ZKReportModal from "@/components/reports/zk-report-modal";
+import SuggestionModal from "@/components/validators/suggestion-modal";
 import type { Validator } from "@shared/schema";
 
 interface AlertCardProps {
@@ -14,6 +15,7 @@ interface AlertCardProps {
 export default function AlertCard({ validator }: AlertCardProps) {
   const { isConnected } = useWallet();
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
 
   const getRiskColor = (type: string) => {
     switch (type) {
@@ -74,7 +76,12 @@ export default function AlertCard({ validator }: AlertCardProps) {
         {validator.type !== 'good' && (
           <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between">
             <div className="space-x-2">
-              <Button variant="outline" size="sm" className="text-slate-300 border-slate-600 hover:bg-slate-800">
+              <Button 
+                onClick={() => setShowSuggestionModal(true)}
+                variant="outline" 
+                size="sm" 
+                className="text-slate-300 border-slate-600 hover:bg-slate-800"
+              >
                 View suggested action
               </Button>
               {isConnected && (
@@ -100,6 +107,14 @@ export default function AlertCard({ validator }: AlertCardProps) {
             isOpen={showReportModal}
             onClose={() => setShowReportModal(false)}
             validatorStash={validator.stash}
+          />
+        )}
+
+        {showSuggestionModal && (
+          <SuggestionModal
+            isOpen={showSuggestionModal}
+            onClose={() => setShowSuggestionModal(false)}
+            validator={validator}
           />
         )}
       </CardContent>

@@ -8,6 +8,7 @@ import {
   FileText, 
   Bell 
 } from "lucide-react";
+import Logo from "@/components/ui/logo";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -24,14 +25,7 @@ export default function Sidebar() {
     <div className="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0">
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-slate-800">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-lg flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <h1 className="text-xl font-bold text-slate-50">Milkyway2</h1>
-        </div>
+        <Logo size="sm" />
       </div>
       
       {/* Navigation */}
