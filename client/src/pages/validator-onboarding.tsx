@@ -141,6 +141,8 @@ export default function ValidatorOnboarding() {
   };
 
   const handleSubmitMessage = async () => {
+    console.log("Submit message clicked");
+    
     if (!keys || !message.trim()) {
       toast({
         title: "Missing Requirements",
@@ -150,11 +152,15 @@ export default function ValidatorOnboarding() {
       return;
     }
 
+    console.log("Starting message submission...");
+
     try {
       // Encrypt the message
+      console.log("Encrypting message...");
       const ciphertext = await encryptMessage(message, keys.symmetricKey);
       
       // Sign the ciphertext
+      console.log("Signing message...");
       const signature = await signMessage(ciphertext, keys.signingPrivateKey);
       
       let transactionHash = "";
@@ -162,6 +168,7 @@ export default function ValidatorOnboarding() {
       
       // Test SubWallet connection if blockchain mode is enabled
       if (useBlockchain) {
+        console.log("Blockchain mode enabled, testing SubWallet...");
         try {
           // Test SubWallet availability and connection
           if (typeof window !== 'undefined') {
@@ -169,12 +176,14 @@ export default function ValidatorOnboarding() {
             
             // Try to enable SubWallet specifically
             const extensions = await web3Enable("Milkyway2");
+            console.log("Extensions found:", extensions.length);
             
             if (extensions.length === 0) {
               throw new Error("No Polkadot extensions found. Please install SubWallet.");
             }
             
             const accounts = await web3Accounts();
+            console.log("Accounts found:", accounts.length);
             
             if (accounts.length === 0) {
               throw new Error("No accounts found. Please create an account in SubWallet.");
@@ -182,6 +191,7 @@ export default function ValidatorOnboarding() {
             
             const subwalletAccount = accounts[0];
             senderAddress = subwalletAccount.address;
+            console.log("Using SubWallet account:", senderAddress);
             
             // Try to connect and submit to Passet chain
             await contract.connect(subwalletAccount);
@@ -214,11 +224,12 @@ export default function ValidatorOnboarding() {
           
           toast({
             title: "Simulation Mode",
-            description: `SubWallet unavailable. Message saved in simulation mode. Error: ${errorMessage}`,
+            description: `SubWallet unavailable. Message saved in simulation mode.`,
             variant: "destructive",
           });
         }
       } else {
+        console.log("Database-only mode");
         // Database-only mode
         transactionHash = `db_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         
@@ -227,8 +238,10 @@ export default function ValidatorOnboarding() {
         }
       }
 
+      console.log("Saving to database...", { senderAddress, transactionHash, groupKeyId });
+
       // Always store in database for message feed
-      await submitMessageMutation.mutateAsync({
+      const result = await submitMessageMutation.mutateAsync({
         ciphertext,
         signature,
         senderAddress,
@@ -236,13 +249,15 @@ export default function ValidatorOnboarding() {
         groupKeyId,
       });
 
+      console.log("Database save result:", result);
+
       // Clear message after successful submission
       setMessage("");
       
       if (!useBlockchain) {
         toast({
           title: "Message Stored",
-          description: "Encrypted message saved to database successfully.",
+          description: "Encrypted message saved successfully.",
         });
       }
       
@@ -250,7 +265,7 @@ export default function ValidatorOnboarding() {
       console.error("Message submission failed:", error);
       toast({
         title: "Submission Failed",
-        description: "Failed to submit encrypted message. Please try again.",
+        description: `Failed to submit encrypted message: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive",
       });
     }
@@ -423,12 +438,7 @@ export default function ValidatorOnboarding() {
                     className="bg-primary hover:bg-indigo-700"
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    {submitMessageMutation.isPending 
-                      ? "Submitting..." 
-                      : useBlockchain 
-                        ? "Test SubWallet & Submit" 
-                        : "Submit to Database"
-                    }
+                    {submitMessageMutation.isPending ? "Submitting..." : "Submit Message"}
                   </Button>
                 </div>
                 
