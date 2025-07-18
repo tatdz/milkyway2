@@ -31,7 +31,7 @@ export default function ValidatorOnboarding() {
   const queryClient = useQueryClient();
 
   // Fetch encrypted messages
-  const { data: messages = [], refetch: refetchMessages } = useQuery<EncryptedMessage[]>({
+  const { data: messageResponse, refetch: refetchMessages } = useQuery({
     queryKey: ["/api/messages", groupKeyId],
     queryFn: async () => {
       const response = await apiRequest("GET", `/api/messages?groupId=${groupKeyId}`);
@@ -39,6 +39,9 @@ export default function ValidatorOnboarding() {
     },
     enabled: !!groupKeyId,
   });
+
+  // Extract messages array from API response
+  const messages = Array.isArray(messageResponse?.data) ? messageResponse.data : [];
 
   // Mutation to submit encrypted message
   const submitMessageMutation = useMutation({
@@ -247,7 +250,7 @@ export default function ValidatorOnboarding() {
     unlockMessagesMutation.mutate(groupKeyId);
   };
 
-  const decryptedMessages = isUnlocked && keys 
+  const decryptedMessages = isUnlocked && keys && Array.isArray(messages)
     ? messages.map(msg => ({
         ...msg,
         decrypted: decryptMessage(msg.ciphertext, keys.symmetricKey)
