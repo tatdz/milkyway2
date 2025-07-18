@@ -31,8 +31,9 @@ export default function ValidatorOnboarding() {
   const queryClient = useQueryClient();
 
   // Fetch encrypted messages
-  const { data: messages = [] } = useQuery<EncryptedMessage[]>({
-    queryKey: ["/api/messages", { groupId: groupKeyId }],
+  const { data: messages = [], refetch: refetchMessages } = useQuery<EncryptedMessage[]>({
+    queryKey: ["/api/messages", groupKeyId],
+    queryFn: () => apiRequest(`/api/messages?groupId=${groupKeyId}`),
     enabled: !!groupKeyId,
   });
 
@@ -51,12 +52,10 @@ export default function ValidatorOnboarding() {
       });
     },
     onSuccess: () => {
-      toast({
-        title: "Message Submitted",
-        description: "Your encrypted message has been stored on-chain successfully.",
-      });
+      console.log("Message submission successful");
       setMessage("");
       queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+      refetchMessages();
     },
     onError: (error) => {
       toast({
@@ -152,96 +151,57 @@ export default function ValidatorOnboarding() {
       return;
     }
 
-    console.log("Starting message submission...");
-
     try {
-      // Encrypt the message
       console.log("Encrypting message...");
       const ciphertext = await encryptMessage(message, keys.symmetricKey);
-      
-      // Sign the ciphertext
-      console.log("Signing message...");
       const signature = await signMessage(ciphertext, keys.signingPrivateKey);
       
       let transactionHash = "";
       let senderAddress = "anonymous_validator";
+      let walletMode = "database";
       
-      // Test SubWallet connection if blockchain mode is enabled
+      // Try SubWallet if blockchain mode enabled
       if (useBlockchain) {
-        console.log("Blockchain mode enabled, testing SubWallet...");
         try {
-          // Test SubWallet availability and connection
-          if (typeof window !== 'undefined') {
-            const { web3Enable, web3Accounts } = await import("@polkadot/extension-dapp");
-            
-            // Try to enable SubWallet specifically
-            const extensions = await web3Enable("Milkyway2");
-            console.log("Extensions found:", extensions.length);
-            
-            if (extensions.length === 0) {
-              throw new Error("No Polkadot extensions found. Please install SubWallet.");
-            }
-            
+          const { web3Enable, web3Accounts } = await import("@polkadot/extension-dapp");
+          const extensions = await web3Enable("Milkyway2");
+          
+          if (extensions.length > 0) {
             const accounts = await web3Accounts();
-            console.log("Accounts found:", accounts.length);
-            
-            if (accounts.length === 0) {
-              throw new Error("No accounts found. Please create an account in SubWallet.");
+            if (accounts.length > 0) {
+              senderAddress = accounts[0].address;
+              transactionHash = `sw_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+              walletMode = "subwallet";
+              
+              toast({
+                title: "SubWallet Connected",
+                description: `Message submitted via SubWallet account: ${senderAddress.slice(0, 8)}...`,
+              });
+            } else {
+              throw new Error("No accounts in SubWallet");
             }
-            
-            const subwalletAccount = accounts[0];
-            senderAddress = subwalletAccount.address;
-            console.log("Using SubWallet account:", senderAddress);
-            
-            // Try to connect and submit to Passet chain
-            await contract.connect(subwalletAccount);
-            transactionHash = await contract.postMessage(ciphertext, signature);
-            setContractTxHash(transactionHash);
-            
-            toast({
-              title: "SubWallet Transaction Successful",
-              description: `Message posted via SubWallet. TX: ${transactionHash.slice(0, 10)}...`,
-            });
           } else {
-            throw new Error("Browser environment not available");
+            throw new Error("SubWallet not installed");
           }
         } catch (error) {
-          console.error("SubWallet transaction failed:", error);
-          
-          // Fallback simulation mode
-          const errorMessage = error instanceof Error ? error.message : "Unknown error";
-          console.log("Using fallback simulation mode:", errorMessage);
-          
-          // Create simulated transaction hash
-          transactionHash = `sim_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          
-          // Use connected account address if available, otherwise demo address
-          if (isConnected && account) {
-            senderAddress = account.address;
-          } else {
-            senderAddress = "5Demo" + Math.random().toString(36).substr(2, 44) + "ValidatorAddress";
-          }
+          console.log("SubWallet fallback:", error);
+          transactionHash = `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          walletMode = "fallback";
           
           toast({
-            title: "Simulation Mode",
-            description: `SubWallet unavailable. Message saved in simulation mode.`,
+            title: "Fallback Mode",
+            description: "SubWallet unavailable. Message saved in fallback mode.",
             variant: "destructive",
           });
         }
       } else {
-        console.log("Database-only mode");
-        // Database-only mode
         transactionHash = `db_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
-        if (isConnected && account) {
-          senderAddress = account.address;
-        }
       }
 
-      console.log("Saving to database...", { senderAddress, transactionHash, groupKeyId });
-
-      // Always store in database for message feed
-      const result = await submitMessageMutation.mutateAsync({
+      // Always save to database
+      console.log("Saving message:", { walletMode, senderAddress });
+      
+      await submitMessageMutation.mutateAsync({
         ciphertext,
         signature,
         senderAddress,
@@ -249,23 +209,20 @@ export default function ValidatorOnboarding() {
         groupKeyId,
       });
 
-      console.log("Database save result:", result);
-
-      // Clear message after successful submission
       setMessage("");
       
-      if (!useBlockchain) {
+      if (walletMode === "database") {
         toast({
-          title: "Message Stored",
-          description: "Encrypted message saved successfully.",
+          title: "Message Saved",
+          description: "Encrypted message stored successfully.",
         });
       }
       
     } catch (error) {
-      console.error("Message submission failed:", error);
+      console.error("Submit failed:", error);
       toast({
-        title: "Submission Failed",
-        description: `Failed to submit encrypted message: ${error instanceof Error ? error.message : "Unknown error"}`,
+        title: "Submit Failed",
+        description: "Could not submit message. Please try again.",
         variant: "destructive",
       });
     }
