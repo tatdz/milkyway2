@@ -31,7 +31,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-950">
       <Header 
         title="Validator Risk Dashboard"
-        subtitle="Real-time monitoring of Polkadot validators"
+        subtitle="A unified lens on risk and collaboration for users and validators on Polkadot, Kusama and parachains"
       />
 
       <main className="p-6 space-y-6">

@@ -2,7 +2,7 @@
 
 > Decentralized Blockchain Validator Risk & Incident Reporting Application
 
-Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-preserving validator incident and risk reporting on Polkadot and Passet chains. The platform combines real-time validator monitoring with zero-knowledge anonymous reporting using the Semaphore protocol to ensure network security and transparency.
+Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-preserving validator incident and risk reporting on Polkadot, Kusama, and parachains. The platform combines real-time validator monitoring with zero-knowledge anonymous reporting using the Semaphore protocol to ensure network security and transparency for both users and validators.
 
 ## ✨ Features
 
@@ -20,10 +20,11 @@ Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-p
 
 ### 🔐 Validator Encrypted Messaging
 - **Group Symmetric Encryption**: Validators securely post encrypted messages using AES-256
-- **Ed25519 Digital Signatures**: All messages signed and verified on-chain for authenticity
-- **Governance Unlock Events**: Messages become publicly decryptable after designated on-chain events
+- **Ed25519 Digital Signatures**: All messages signed and verified on-chain for authenticity  
+- **Governance Unlock Events**: Encrypted messages become publicly viewable by users after governance unlock events
 - **Immutable Storage**: Messages stored permanently on Passet chain with full transparency post-unlock
 - **Smart Contract Integration**: EncryptedGroupMessages contract deployed on Passet chain for decentralized storage
+- **Validator Collaboration**: Secure communication channel for risk coordination and incident response
 
 ### 🏛️ Governance Integration
 - **OpenGov Referenda Tracking**: Real-time monitoring of Polkadot governance proposals
@@ -86,23 +87,50 @@ The app uses in-memory storage for development - no database setup required! Dat
 
 ## 🎯 Usage Guide
 
-### 1. Connect Your Wallet
-Click "Connect Wallet" in the header and approve the connection with your SubWallet or Polkadot.js extension.
+### For Users: Network Monitoring & Risk Assessment
 
-### 2. Monitor Validators
-- Navigate to the **Validators** page to view real-time validator performance
-- Use filters to find validators by risk level (Good/Neutral/Bad)
-- Click "View suggested action" for personalized recommendations
+1. **Connect Your Wallet**
+   - Click "Connect Wallet" in the header and approve the connection with your SubWallet or Polkadot.js extension
+   - Access all features across Polkadot, Kusama, and parachains
 
-### 3. Submit Anonymous Reports
-- Click "Report Incident" on any problematic validator
-- Generate a zero-knowledge proof to maintain anonymity
-- Submit verified reports to help protect the network
+2. **Monitor Validators**
+   - Navigate to the **Validators** page to view real-time validator performance
+   - Use filters to find validators by risk level (Good/Neutral/Bad)
+   - Click "View suggested action" for personalized recommendations
 
-### 4. Track Governance
-- Visit the **Governance** page for active referendum monitoring
-- View voting progress and community participation metrics
-- Stay informed about important network decisions
+3. **Submit Anonymous Reports**
+   - Click "Report Incident" on any problematic validator
+   - Generate a zero-knowledge proof to maintain anonymity
+   - Submit verified reports to help protect the network
+
+4. **Track Governance**
+   - Visit the **Governance** page for active referendum monitoring
+   - View voting progress and community participation metrics
+   - Stay informed about important network decisions
+
+5. **View Validator Communications**
+   - Access the **Message Feed** to see unlocked validator communications
+   - Review transparent post-unlock messages about network incidents and coordination
+
+### For Validators: Secure Communication & Risk Management
+
+1. **Access Validator Messaging**
+   - Navigate to **Validator Messaging** in the sidebar
+   - Connect your validator wallet for identity verification
+
+2. **Generate Encryption Keys**
+   - Use the **Key Management** tab to generate secure AES-256 and Ed25519 keys
+   - Export keys for backup or import existing validator group keys
+
+3. **Send Encrypted Messages**
+   - Use the **Send Messages** tab to compose encrypted communications
+   - Messages are cryptographically signed and stored on Passet chain
+   - Choose between blockchain or database storage options
+
+4. **Coordinate Risk Response**
+   - Securely communicate about network incidents, slash events, or governance issues
+   - Messages remain encrypted until governance unlock events make them publicly viewable
+   - Enable transparent post-incident analysis while maintaining operational privacy
 
 ## 🛠️ Development
 
@@ -164,6 +192,7 @@ Milkyway2 uses the Semaphore protocol to enable completely anonymous incident re
 - **Smart Contracts**: EncryptedGroupMessages and zkAttestation deployed on Passet Chain
 - **Verification Links**: Integrated block explorer links for transparency
 - **Sybil Resistance**: One human, one signal enforcement through on-chain verification
+- **Cross-Chain Compatibility**: Full support for Polkadot, Kusama, and parachain ecosystems
 
 ## 🤝 Contributing
 
@@ -188,4 +217,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Built with ❤️ for the Polkadot ecosystem. Empowering transparent, decentralized validator monitoring.
+Built with ❤️ for the Polkadot ecosystem. Empowering transparent, decentralized validator monitoring and secure collaboration across Polkadot, Kusama, and parachains.

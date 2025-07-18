@@ -9,7 +9,7 @@ export default function Documentation() {
     <div className="min-h-screen bg-slate-950">
       <Header 
         title="Documentation"
-        subtitle="Learn about Milkyway2's mission, roadmap, and technical implementation"
+        subtitle="Complete guide to Milkyway2's validator monitoring and encrypted messaging for Polkadot, Kusama, and parachains"
       />
 
       <main className="p-6 space-y-6">
@@ -20,9 +20,10 @@ export default function Documentation() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-slate-300">
-              Milkyway2 is a decentralized Web3 application aimed at transparent, privacy-preserving validator 
-              incident and risk reporting on Polkadot and Passet chains. Our platform combines real-time 
-              validator monitoring with zero-knowledge anonymous reporting to ensure network security and transparency.
+              Milkyway2 is a decentralized Web3 application designed for transparent, privacy-preserving validator 
+              incident and risk reporting across Polkadot, Kusama, and parachains. Our platform combines real-time 
+              validator monitoring with zero-knowledge anonymous reporting and secure encrypted messaging to ensure 
+              network security and transparency for both users and validators.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 bg-slate-900 rounded-lg">
@@ -44,7 +45,7 @@ export default function Documentation() {
         {/* User Flow Section */}
         <Card className="bg-slate-850 border-slate-800">
           <CardHeader>
-            <CardTitle className="text-slate-50">User Flow</CardTitle>
+            <CardTitle className="text-slate-50">User Flow - Network Monitoring</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-slate-300 mb-4">
@@ -84,6 +85,55 @@ export default function Documentation() {
                 <div>
                   <h4 className="font-semibold text-slate-50">Signal Logging</h4>
                   <p className="text-slate-300 text-sm">Optionally, signal is logged to the event feed and visible to DAO/governance for collective decision making.</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Validator Flow Section */}
+        <Card className="bg-slate-850 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-slate-50">Validator Flow - Encrypted Messaging</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-slate-300 mb-4">
+              Validators can securely communicate about network incidents and coordinate risk response:
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-4 p-4 bg-slate-900 rounded-lg">
+                <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-400 font-bold text-sm">1</div>
+                <div>
+                  <h4 className="font-semibold text-slate-50">Connect Validator Wallet</h4>
+                  <p className="text-slate-300 text-sm">Validator connects wallet and accesses the encrypted messaging interface.</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4 p-4 bg-slate-900 rounded-lg">
+                <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-400 font-bold text-sm">2</div>
+                <div>
+                  <h4 className="font-semibold text-slate-50">Generate Encryption Keys</h4>
+                  <p className="text-slate-300 text-sm">Create or import AES-256 symmetric keys and Ed25519 signing keys for secure communication.</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4 p-4 bg-slate-900 rounded-lg">
+                <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-400 font-bold text-sm">3</div>
+                <div>
+                  <h4 className="font-semibold text-slate-50">Send Encrypted Messages</h4>
+                  <p className="text-slate-300 text-sm">Compose messages about incidents, risk coordination, or network status. Messages are encrypted and digitally signed.</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4 p-4 bg-slate-900 rounded-lg">
+                <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-400 font-bold text-sm">4</div>
+                <div>
+                  <h4 className="font-semibold text-slate-50">On-Chain Storage</h4>
+                  <p className="text-slate-300 text-sm">Messages are stored immutably on Passet chain via EncryptedGroupMessages smart contract.</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-4 p-4 bg-slate-900 rounded-lg">
+                <div className="w-8 h-8 bg-purple-600/20 rounded-full flex items-center justify-center text-purple-400 font-bold text-sm">5</div>
+                <div>
+                  <h4 className="font-semibold text-slate-50">Governance Unlock</h4>
+                  <p className="text-slate-300 text-sm">After governance events, encrypted messages become publicly viewable by users for transparency.</p>
                 </div>
               </div>
             </div>

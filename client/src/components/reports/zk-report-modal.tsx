@@ -122,12 +122,7 @@ export default function ZKReportModal({ isOpen, onClose, validatorStash = "" }: 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-slate-850 border-slate-800 text-slate-50 sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-slate-50">Submit Anonymous Report</DialogTitle>
-            <Button variant="ghost" size="sm" onClick={onClose} className="text-slate-400 hover:text-slate-200">
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
+          <DialogTitle className="text-slate-50">Submit Anonymous Report</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

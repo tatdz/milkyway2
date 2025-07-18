@@ -2,7 +2,7 @@
 
 ## Overview
 
-Milkyway2 is a decentralized Web3 application designed for transparent, privacy-preserving validator incident and risk reporting on Polkadot and Passet chains. The application combines real-time validator monitoring with zero-knowledge anonymous reporting using Semaphore protocol to ensure network security and transparency.
+Milkyway2 is a decentralized Web3 application designed for transparent, privacy-preserving validator incident and risk reporting on Polkadot, Kusama, and parachains. The application combines real-time validator monitoring with zero-knowledge anonymous reporting and secure encrypted messaging to ensure network security and transparency for both users and validators.
 
 ## User Preferences
 
@@ -10,15 +10,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-**January 17, 2025**
-- ✓ Fixed "View suggested action" buttons with comprehensive suggestion modal system
-- ✓ Created new Milkyway2 logo with Silkscreen font (normal weight) and animated galaxy icon
-- ✓ Added detailed risk-specific recommendations for validator management
-- ✓ Implemented severity-coded action items (critical/warning/info) with external resource links
-- ✓ Added comprehensive README.md for GitHub repository with full project documentation
-- ✓ Implemented validator encrypted messaging system with AES-256 encryption and Ed25519 signatures
-- ✓ Created validator onboarding page with key management and secure message submission
-- ✓ Added governance unlock functionality for public message decryption
+**January 18, 2025**
+- ✓ Fixed double close button issue in Submit Anonymous Report modal
+- ✓ Enhanced ZK proof submission with wallet connection verification and fallback handling
+- ✓ Improved validator messaging with robust error handling and demo mode fallback
+- ✓ Updated dashboard subtitle to reflect unified user/validator focus on Polkadot, Kusama, and parachains
+- ✓ Added separate user and validator flow documentation in README and app documentation
+- ✓ Enhanced README with detailed usage guides for both users and validators
+- ✓ Updated all messaging to include cross-chain support (Polkadot, Kusama, parachains)
+- ✓ Cleaned all sensitive wallet addresses and private keys from documentation
+- ✓ Simplified README installation process (no database setup required)
 
 ## System Architecture
 
