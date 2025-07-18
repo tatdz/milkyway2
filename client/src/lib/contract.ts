@@ -104,7 +104,7 @@ export class EncryptedMessagesContract {
 
   constructor(
     private contractAddress: string,
-    private rpcUrl: string = process.env.PASSET_RPC_URL || "wss://rpc.passet.network"
+    private rpcUrl: string = import.meta.env.VITE_PASSET_RPC_URL || "wss://rpc.passet.network"
   ) {}
 
   async connect(account?: InjectedAccountWithMeta) {
@@ -254,7 +254,10 @@ export function createEncryptedMessagesContract(network: 'passet' | 'localhost' 
   if (address === "0x0000000000000000000000000000000000000000") {
     console.warn(`Contract not deployed to ${network} yet`);
   }
-  return new EncryptedMessagesContract(address);
+  
+  // Use environment variable for RPC URL, with fallback
+  const rpcUrl = import.meta.env.VITE_PASSET_RPC_URL || "wss://rpc.passet.network";
+  return new EncryptedMessagesContract(address, rpcUrl);
 }
 
 // Hook for React components
