@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -250,12 +250,36 @@ export default function ValidatorOnboarding() {
     unlockMessagesMutation.mutate(groupKeyId);
   };
 
-  const decryptedMessages = isUnlocked && keys && Array.isArray(messages)
-    ? messages.map(msg => ({
-        ...msg,
-        decrypted: decryptMessage(msg.ciphertext, keys.symmetricKey)
-      }))
-    : [];
+  // State for decrypted messages
+  const [decryptedMessages, setDecryptedMessages] = useState<any[]>([]);
+
+  // Effect to decrypt messages when unlocked
+  useEffect(() => {
+    if (isUnlocked && keys && Array.isArray(messages)) {
+      const decryptMessagesAsync = async () => {
+        try {
+          const decrypted = await Promise.all(
+            messages.map(async (msg) => ({
+              ...msg,
+              decrypted: await decryptMessage(msg.ciphertext, keys.symmetricKey)
+            }))
+          );
+          setDecryptedMessages(decrypted);
+        } catch (error) {
+          console.error('Failed to decrypt messages:', error);
+          setDecryptedMessages(
+            messages.map(msg => ({
+              ...msg,
+              decrypted: '[Decryption failed]'
+            }))
+          );
+        }
+      };
+      decryptMessagesAsync();
+    } else {
+      setDecryptedMessages([]);
+    }
+  }, [isUnlocked, keys, messages]);
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
