@@ -33,7 +33,10 @@ export default function ValidatorOnboarding() {
   // Fetch encrypted messages
   const { data: messages = [], refetch: refetchMessages } = useQuery<EncryptedMessage[]>({
     queryKey: ["/api/messages", groupKeyId],
-    queryFn: () => apiRequest(`/api/messages?groupId=${groupKeyId}`),
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/messages?groupId=${groupKeyId}`);
+      return response.json();
+    },
     enabled: !!groupKeyId,
   });
 
@@ -46,10 +49,8 @@ export default function ValidatorOnboarding() {
       transactionHash: string;
       groupKeyId: string;
     }) => {
-      return apiRequest("/api/messages", {
-        method: "POST",
-        body: JSON.stringify(messageData),
-      });
+      const response = await apiRequest("POST", "/api/messages", messageData);
+      return response.json();
     },
     onSuccess: () => {
       console.log("Message submission successful");
@@ -69,9 +70,8 @@ export default function ValidatorOnboarding() {
   // Mutation to unlock messages
   const unlockMessagesMutation = useMutation({
     mutationFn: async (groupId: string) => {
-      return apiRequest(`/api/messages/unlock/${groupId}`, {
-        method: "POST",
-      });
+      const response = await apiRequest("POST", `/api/messages/unlock/${groupId}`);
+      return response.json();
     },
     onSuccess: () => {
       setIsUnlocked(true);
