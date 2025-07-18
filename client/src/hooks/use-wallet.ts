@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import type { InjectedAccountWithMeta, InjectedExtension } from "@polkadot/extension-inject/types";
 
 interface WalletState {
-  account: string | null;
+  account: InjectedAccountWithMeta | null;
   isConnected: boolean;
   isLoading: boolean;
+  extension: InjectedExtension | null;
 }
 
 export function useWallet() {
@@ -11,6 +13,7 @@ export function useWallet() {
     account: null,
     isConnected: false,
     isLoading: false,
+    extension: null,
   });
 
   const connect = async () => {
@@ -34,15 +37,21 @@ export function useWallet() {
         throw new Error("No accounts found. Please create an account in your wallet extension.");
       }
       
-      const account = accounts[0].address;
+      const account = accounts[0];
+      const extension = extensions[0];
+      
       setWalletState({
         account,
         isConnected: true,
         isLoading: false,
+        extension,
       });
       
       // Store in localStorage for persistence
-      localStorage.setItem("milkyway2_account", account);
+      localStorage.setItem("milkyway2_account", JSON.stringify({
+        address: account.address,
+        name: account.meta.name
+      }));
       
     } catch (error) {
       console.error("Wallet connection failed:", error);
@@ -50,6 +59,7 @@ export function useWallet() {
         account: null,
         isConnected: false,
         isLoading: false,
+        extension: null,
       });
       
       // Show user-friendly error
@@ -62,19 +72,33 @@ export function useWallet() {
       account: null,
       isConnected: false,
       isLoading: false,
+      extension: null,
     });
     localStorage.removeItem("milkyway2_account");
   };
 
   // Check for stored account on mount
   useEffect(() => {
-    const storedAccount = localStorage.getItem("milkyway2_account");
-    if (storedAccount) {
-      setWalletState({
-        account: storedAccount,
-        isConnected: true,
-        isLoading: false,
-      });
+    const storedAccountData = localStorage.getItem("milkyway2_account");
+    if (storedAccountData) {
+      try {
+        const accountInfo = JSON.parse(storedAccountData);
+        // Create a minimal account object for persistence
+        const account = {
+          address: accountInfo.address,
+          meta: { name: accountInfo.name || "Stored Account" }
+        } as InjectedAccountWithMeta;
+        
+        setWalletState({
+          account,
+          isConnected: true,
+          isLoading: false,
+          extension: null, // Will be set when user performs actions requiring signing
+        });
+      } catch (error) {
+        console.warn("Failed to parse stored account data:", error);
+        localStorage.removeItem("milkyway2_account");
+      }
     }
   }, []);
 

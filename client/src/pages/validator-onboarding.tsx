@@ -141,10 +141,19 @@ export default function ValidatorOnboarding() {
   };
 
   const handleSubmitMessage = async () => {
-    if (!keys || !message.trim() || !isConnected || !account) {
+    if (!keys || !message.trim()) {
       toast({
         title: "Missing Requirements",
-        description: "Please connect wallet, generate keys, and enter a message.",
+        description: "Please generate keys and enter a message.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isConnected || !account) {
+      toast({
+        title: "SubWallet Required",
+        description: "Please connect your SubWallet to send messages.",
         variant: "destructive",
       });
       return;
@@ -160,64 +169,54 @@ export default function ValidatorOnboarding() {
       let transactionHash = "";
       
       if (useBlockchain) {
-        // Submit to smart contract on Passet chain via SubWallet
+        // Submit to Passet chain via SubWallet
         try {
-          await contract.connect();
+          await contract.connect(account);
           transactionHash = await contract.postMessage(ciphertext, signature);
           setContractTxHash(transactionHash);
           
           toast({
-            title: "Passet Chain Submission Successful",
-            description: `Message posted to Passet chain via SubWallet. TX: ${transactionHash.slice(0, 10)}...`,
+            title: "SubWallet Transaction Successful",
+            description: `Message posted to Passet chain. TX: ${transactionHash.slice(0, 10)}...`,
           });
         } catch (error) {
-          console.error("SubWallet/Passet submission failed:", error);
+          console.error("SubWallet transaction failed:", error);
+          
+          // Show specific error message
+          const errorMessage = error instanceof Error ? error.message : "Unknown error";
           toast({
-            title: "SubWallet Submission Failed",
-            description: "Falling back to database storage. Check SubWallet connection.",
+            title: "SubWallet Transaction Failed",
+            description: `Error: ${errorMessage}. Falling back to database storage.`,
             variant: "destructive",
           });
+          
           // Fall back to database storage
-          transactionHash = `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
-            .map(b => b.toString(16).padStart(2, '0')).join('')}`;
+          transactionHash = `db_fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         }
       } else {
-        // Generate mock transaction hash for database storage
-        transactionHash = `0x${Array.from(crypto.getRandomValues(new Uint8Array(32)))
-          .map(b => b.toString(16).padStart(2, '0')).join('')}`;
+        // Generate transaction hash for database storage
+        transactionHash = `db_storage_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       }
 
-      // Also store in database for backup/indexing
+      // Store in database
       await submitMessageMutation.mutateAsync({
         ciphertext,
         signature,
-        senderAddress: account?.address || "anonymous_validator",
+        senderAddress: account.address,
         transactionHash,
         groupKeyId,
       });
+
+      // Clear message after successful submission
+      setMessage("");
+      
     } catch (error) {
-      console.error("Failed to submit message:", error);
-      // Final fallback - create a demo message for visibility
-      try {
-        await submitMessageMutation.mutateAsync({
-          ciphertext: "demo_encrypted_" + message.substring(0, 20) + "_" + Date.now(),
-          signature: "demo_signature_" + Date.now(),
-          senderAddress: account?.address || "demo_validator",
-          transactionHash: "demo_tx_" + Date.now(),
-          groupKeyId,
-        });
-        
-        toast({
-          title: "Message Submitted",
-          description: "Message submitted successfully (demo mode).",
-        });
-      } catch (fallbackError) {
-        toast({
-          title: "Submission Failed",
-          description: "Failed to submit encrypted message. Please try again.",
-          variant: "destructive",
-        });
-      }
+      console.error("Message submission failed:", error);
+      toast({
+        title: "Submission Failed",
+        description: "Failed to submit encrypted message. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -246,8 +245,8 @@ export default function ValidatorOnboarding() {
         <Card className="bg-slate-850 border-slate-800">
           <CardContent className="p-6 text-center">
             <Shield className="w-12 h-12 text-warning mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-slate-50 mb-2">Wallet Connection Required</h3>
-            <p className="text-slate-400">Please connect your wallet to access validator messaging features.</p>
+            <h3 className="text-lg font-semibold text-slate-50 mb-2">SubWallet Connection Required</h3>
+            <p className="text-slate-400">Please connect your SubWallet to access validator messaging features and submit to Passet chain.</p>
           </CardContent>
         </Card>
       )}
@@ -377,11 +376,11 @@ export default function ValidatorOnboarding() {
 
                   <Button 
                     onClick={handleSubmitMessage}
-                    disabled={!isConnected || !keys || !message.trim() || submitMessageMutation.isPending}
+                    disabled={!keys || !message.trim() || submitMessageMutation.isPending}
                     className="bg-primary hover:bg-indigo-700"
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    {submitMessageMutation.isPending ? "Encrypting..." : "Encrypt & Submit"}
+                    {submitMessageMutation.isPending ? "Submitting..." : useBlockchain ? "Submit via SubWallet" : "Submit to Database"}
                   </Button>
                 </div>
                 

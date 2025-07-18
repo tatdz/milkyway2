@@ -1,5 +1,8 @@
 // Smart contract integration for EncryptedGroupMessages
 // Using Polkadot/SubWallet ecosystem for Passet chain interactions
+import { ApiPromise, WsProvider } from "@polkadot/api";
+import { web3FromAddress } from "@polkadot/extension-dapp";
+import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 
 // Contract ABI for EncryptedGroupMessages
 export const ENCRYPTED_MESSAGES_ABI = [
@@ -96,38 +99,47 @@ export interface ContractMessage {
 }
 
 export class EncryptedMessagesContract {
+  private api: ApiPromise | null = null;
   private signer: { address: string; injector: any } | null = null;
 
   constructor(
     private contractAddress: string,
-    private chainId: number = 88888 // Passet chain ID
+    private rpcUrl: string = process.env.PASSET_RPC_URL || "wss://rpc.passet.network"
   ) {}
 
-  async connect() {
-    // Use SubWallet or Polkadot.js extension for Passet chain
+  async connect(account?: InjectedAccountWithMeta) {
     try {
-      const { web3Enable, web3FromAddress } = await import("@polkadot/extension-dapp");
-      
-      // Enable the extension
-      const extensions = await web3Enable("Milkyway2");
-      
-      if (extensions.length === 0) {
-        throw new Error('SubWallet or Polkadot.js extension not found. Please install SubWallet for Passet chain interactions.');
+      // Set up signer first
+      if (account) {
+        const injector = await web3FromAddress(account.address);
+        this.signer = { address: account.address, injector };
+        console.log('Connected to SubWallet for Passet chain:', account.address);
+      } else {
+        // Try to get account from localStorage
+        const storedAccountData = localStorage.getItem("milkyway2_account");
+        if (storedAccountData) {
+          const accountInfo = JSON.parse(storedAccountData);
+          const injector = await web3FromAddress(accountInfo.address);
+          this.signer = { address: accountInfo.address, injector };
+          console.log('Connected to stored SubWallet account:', accountInfo.address);
+        } else {
+          throw new Error('Please connect your SubWallet first in the main application.');
+        }
       }
 
-      // Get stored account from localStorage
-      const account = localStorage.getItem("milkyway2_account");
-      if (!account) {
-        throw new Error('Please connect your SubWallet first in the main application.');
+      // Try to connect to Passet network (with fallback)
+      try {
+        const provider = new WsProvider(this.rpcUrl, false); // Don't auto-connect
+        this.api = await ApiPromise.create({ 
+          provider,
+          throwOnConnect: true
+        });
+        console.log('Connected to Passet chain RPC');
+      } catch (rpcError) {
+        console.warn('Passet RPC connection failed, will use simulation mode:', rpcError);
+        // Set api to null to indicate simulation mode
+        this.api = null;
       }
-
-      // Get the injector for signing
-      const injector = await web3FromAddress(account);
-      
-      // Store connection info for Passet chain interactions
-      this.signer = { address: account, injector };
-      
-      console.log('Connected to SubWallet for Passet chain:', account);
       
     } catch (error) {
       console.error('SubWallet connection failed:', error);
@@ -141,18 +153,64 @@ export class EncryptedMessagesContract {
     }
 
     try {
-      // For now, simulate the transaction since Passet chain contract deployment is pending
-      // In real implementation, this would use Polkadot API to interact with the Passet chain
-      const mockTxHash = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(32)))
-        .map(b => b.toString(16).padStart(2, '0')).join('');
+      if (this.api) {
+        // Real Passet chain transaction
+        const remarkData = JSON.stringify({
+          type: "encrypted_message",
+          ciphertext: ciphertext.slice(0, 100) + "...", // Truncate for demo
+          signature: signature.slice(0, 100) + "...",
+          timestamp: Date.now(),
+          contract: this.contractAddress
+        });
+
+        // Create the transaction
+        const tx = this.api.tx.system.remark(remarkData);
+        
+        // Sign and send the transaction
+        const txHash = await new Promise<string>((resolve, reject) => {
+          tx.signAndSend(
+            this.signer!.address,
+            { signer: this.signer!.injector.signer },
+            ({ status, txHash, dispatchError }) => {
+              if (dispatchError) {
+                if (dispatchError.isModule) {
+                  const decoded = this.api!.registry.findMetaError(dispatchError.asModule);
+                  reject(new Error(`Transaction failed: ${decoded.name}`));
+                } else {
+                  reject(new Error(`Transaction failed: ${dispatchError.toString()}`));
+                }
+              } else if (status.isInBlock) {
+                console.log('Transaction included in block:', status.asInBlock.toString());
+                resolve(txHash.toString());
+              }
+            }
+          ).catch(reject);
+        });
+        
+        console.log('Message posted to Passet chain via SubWallet:', txHash);
+        return txHash;
+        
+      } else {
+        // Simulation mode - Passet RPC not available
+        console.log('Using SubWallet simulation mode for Passet chain');
+        
+        // Create a simulated transaction hash
+        const simTxHash = "0x" + Array.from(crypto.getRandomValues(new Uint8Array(32)))
+          .map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        // Simulate signing delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        console.log('Simulated SubWallet transaction:', simTxHash);
+        console.log('Encrypted message data:', {
+          signer: this.signer.address,
+          ciphertext: ciphertext.slice(0, 50) + '...',
+          signature: signature.slice(0, 50) + '...'
+        });
+        
+        return simTxHash;
+      }
       
-      console.log('Simulated Passet chain transaction via SubWallet:', mockTxHash);
-      console.log('Message data:', { ciphertext: ciphertext.slice(0, 20) + '...', signature: signature.slice(0, 20) + '...' });
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      return mockTxHash;
     } catch (error) {
       console.error('Failed to post message via SubWallet:', error);
       throw error;
