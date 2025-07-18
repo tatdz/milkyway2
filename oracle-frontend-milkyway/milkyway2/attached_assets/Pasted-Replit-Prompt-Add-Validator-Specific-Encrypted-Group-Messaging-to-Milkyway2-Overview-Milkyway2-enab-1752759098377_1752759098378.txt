@@ -1,0 +1,170 @@
+Replit Prompt: Add Validator-Specific Encrypted Group Messaging to Milkyway2
+Overview
+Milkyway2 enables validators to securely post encrypted messages (e.g., risk reports, status updates) that only they can read initially via a group symmetric key. Messages are stored immutably onchain, signed by validator group keys, and become decryptable and visible to all Milkyway2 users after a designated onchain unlock event.
+
+Architecture Summary
+text
+Validator Onboarding & Messaging Page (for Validators only)
+  ⇩ Encrypt, Sign, and Submit Messages Onchain (EncryptedGroupMessages contract)
+  ⇩ Emits encrypted message events publicly on Passet chain
+
+Milkyway2 Main App (All Users)
+  ⇨ Fetch encrypted messages offchain/onchain
+  ⇨ Before unlock event: show placeholder - messages encrypted & validator-only
+  ⇨ After unlock event: decrypt with group key and display plaintext
+Step 1: Solidity Encrypted Messaging Contract (Passet)
+Deploy a contract storing group Ed25519 public key
+
+Accepts encrypted message + signature submissions by validators
+
+Emits MessagePosted events with ciphertext, signature, timestamp, sender address
+
+Does not track membership; signature verification assumed offchain
+
+text
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract EncryptedGroupMessages {
+    bytes public groupSigningPubKey; // Ed25519 public signing key
+
+    event MessagePosted(
+        bytes ciphertext,
+        bytes signature,
+        uint256 timestamp,
+        address indexed sender
+    );
+
+    constructor(bytes memory _groupPubKey) {
+        require(_groupPubKey.length == 32, "Invalid public key length");
+        groupSigningPubKey = _groupPubKey;
+    }
+
+    function verifySignature(bytes memory ciphertext, bytes memory signature) internal view returns (bool) {
+        // For MVP, assume client-side verification before tx send
+        return true;
+    }
+
+    function postMessage(bytes calldata ciphertext, bytes calldata signature) external {
+        require(verifySignature(ciphertext, signature), "Invalid signature");
+        emit MessagePosted(ciphertext, signature, block.timestamp, msg.sender);
+    }
+}
+Step 2: Golang CLI Tool for Validators
+CLI inputs plaintext messages, group symmetric key, signing key
+
+Encrypts message with AES-256/ChaCha20 groupSymKey
+
+Signs ciphertext with Ed25519 private signing key
+
+Connects to Passet-compatible RPC and calls postMessage on the contract
+
+go
+package main
+
+import (
+    /* imports omitted for brevity */
+)
+
+func encryptMessage(key, plaintext []byte) ([]byte, error) {
+    /* AES-GCM encryption code omitted */
+}
+
+func main() {
+    /* parse flags for msg, symKeyHex, privKeyHex, rpcURL, contractAddr */
+    /* encrypt, sign */
+    /* connect ethclient, send txn with postMessage */
+    fmt.Println("Message sent onchain!")
+}
+(Detailed code and transaction signing omitted for brevity — ensure proper wallet signing code.)
+
+Step 3: Validator Onboarding & Messaging Page (React)
+Dedicated /validator-onboarding page, accessible to validators only
+
+UI Enables:
+
+Secure generation/import of group symmetric key and signing keys (offchain)
+
+Message input with encrypt → sign → onchain submit workflow
+
+Display validator’s previously submitted encrypted messages (decrypted locally)
+
+tsx
+export function ValidatorOnboarding() {
+  const [message, setMessage] = React.useState('');
+
+  async function handleSubmit() {
+    // Encrypt with groupSymKey
+    // Sign ciphertext with groupSignPriv
+    // Submit onchain via wallet connected contract call postMessage()
+  }
+
+  return (
+    <>
+      <h2>Validator Messaging</h2>
+      <textarea 
+        placeholder="Type your message..." 
+        value={message} onChange={e => setMessage(e.target.value)} />
+      <button onClick={handleSubmit}>Encrypt & Submit</button>
+    </>
+  );
+}
+Step 4: Main Milkyway2 App — Message Feed & Decryption Logic
+Before trigger event:
+
+Show placeholder text “Validator messages are encrypted and only visible to validators.”
+
+Messages remain ciphertext-only, no decryption attempt.
+
+After trigger event (e.g., governance unlock):
+
+If user holds groupSymKey, decrypt ciphertext locally and display plaintext.
+
+Otherwise, prompt user about restricted message visibility.
+
+tsx
+export function MessagesFeed({ encryptedMessages, groupSymKey, isUnlocked }) {
+  const [decryptedMessages, setDecryptedMessages] = React.useState([]);
+
+  React.useEffect(() => {
+    if (isUnlocked && groupSymKey) {
+      const plaintexts = encryptedMessages.map(m =>
+        decryptSymmetric(groupSymKey, m.ciphertext));
+      setDecryptedMessages(plaintexts);
+    }
+  }, [isUnlocked, encryptedMessages, groupSymKey]);
+
+  if (!isUnlocked) {
+    return <p>Messages are encrypted and only visible to validators.</p>;
+  }
+
+  return (
+    <ul>
+      {decryptedMessages.map((msg, i) => <li key={i} key={i}>{msg}</li>)}
+    </ul>
+  );
+}
+Step 5: Documentation & README Updates
+Add a new section “Validator Encrypted Messaging & Onboarding”:
+
+Explain offchain key generation and secure sharing among validators
+
+Describe submission of encrypted, signed messages onchain
+
+Detail how Milkyway2 users gain access to decrypted messages only after the unlocking event
+
+Outline security best practices for key rotation and revocation
+
+Introduce usage of the provided Golang CLI tooling for message encryption and submission
+
+URLs for Resources (full text)
+Substrate API Sidecar repository: https://github.com/paritytech/substrate-api-sidecar
+
+Golang Ethereum client lib: https://pkg.go.dev/github.com/ethereum/go-ethereum/ethclient
+
+Polkadot.js API docs: https://polkadot.js.org/api/
+
+Fly.io deployment docs: https://fly.io/docs/
+
+Ed25519 cryptography spec: https://ed25519.cr.yp.to/
+

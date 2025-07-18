@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}} - API Documentation</title>
+    <link rel="stylesheet" href="/docs/css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{.title}}</h1>
+            <p>{{.description}}</p>
+            <span class="version">v{{.version}}</span>
+        </div>
+
+        <div class="endpoints">
+            {{range $path, $methods := .paths}}
+                {{range $method, $details := $methods}}
+                    {{if eq $method "get"}}
+                        <div class="endpoint-card">
+                            <span class="method get">{{$method}}</span>
+                            <div class="path">{{$path}}</div>
+                            <div class="summary">{{$details.summary}}</div>
+                            <div class="description">{{$details.description}}</div>
+                            <div class="actions">
+                                <button class="copy-btn" data-path="{{$path}}" data-method="{{$method}}">
+                                    Copy URL
+                                </button>
+                                <button class="try-btn" data-path="{{$path}}" data-method="{{$method}}">
+                                    Try it
+                                </button>
+                            </div>
+                        </div>
+                    {{end}}
+                {{end}}
+            {{end}}
+        </div>
+
+        <div class="footer">
+            <p>API Base URL: <strong>{{.baseURL}}</strong></p>
+            <p>Raw OpenAPI Specification: <a href="/docs/openapi.yaml" target="_blank">Download YAML</a></p>
+            <p>For more information, visit the <a href="/api/v1/health" target="_blank">health endpoint</a></p>
+        </div>
+    </div>
+
+    <script src="/docs/js"></script>
+</body>
+</html> 
