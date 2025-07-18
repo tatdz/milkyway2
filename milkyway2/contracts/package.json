@@ -1,0 +1,20 @@
+{
+  "name": "milkyway2-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for Milkyway2 decentralized validator risk reporting",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js",
+    "deploy:passet": "hardhat run scripts/deploy.js --network passet",
+    "test": "hardhat test",
+    "verify": "hardhat verify"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  },
+  "dependencies": {
+    "@semaphore-protocol/contracts": "^3.15.0",
+    "@openzeppelin/contracts": "^5.0.0"
+  }
+}
