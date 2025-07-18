@@ -1,0 +1,624 @@
+openapi: 3.0.3
+info:
+  title: Blockchain Data API
+  description: |
+    API for retrieving blockchain validator data and events from Polkadot network.
+    This API provides access to validator information, events, and statistics.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@blockchain-data-api.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.blockchain-data.com
+    description: Production server
+
+paths:
+  /api/v1/health:
+    get:
+      summary: Health Check
+      description: Check the health status of the API
+      tags:
+        - System
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                success: true
+                data:
+                  status: "healthy"
+                  service: "blockchain-data-api"
+                  version: "1.0.0"
+
+  /api/v1/validators:
+    get:
+      summary: Get All Validators
+      description: Retrieve all validators with their information and events
+      tags:
+        - Validators
+      responses:
+        '200':
+          description: List of all validators
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidatorsResponse'
+              example:
+                success: true
+                data:
+                  - stash: "5F3sa2TJc...Good"
+                    type: "good"
+                    description: "Active every session, regular voter and delegate, always online, no slashes, earns consistent rewards, participates in governance"
+                    events_count: 25
+                    created_at: "2024-01-01T00:00:00Z"
+                    updated_at: "2024-01-01T12:00:00Z"
+
+  /api/v1/validators/{type}:
+    get:
+      summary: Get Validator by Type
+      description: Retrieve a specific validator by its type (good, neutral, bad)
+      tags:
+        - Validators
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Validator type
+          schema:
+            type: string
+            enum: [good, neutral, bad]
+          example: "good"
+      responses:
+        '200':
+          description: Validator information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidatorResponse'
+        '404':
+          description: Validator not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/validators/{type}/events:
+    get:
+      summary: Get Validator Events
+      description: Retrieve all events for a specific validator
+      tags:
+        - Validators
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Validator type
+          schema:
+            type: string
+            enum: [good, neutral, bad]
+          example: "good"
+      responses:
+        '200':
+          description: List of validator events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+        '404':
+          description: Validator not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/validators/{type}/events/{eventType}:
+    get:
+      summary: Get Validator Events by Type
+      description: Retrieve events of a specific type for a validator
+      tags:
+        - Validators
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Validator type
+          schema:
+            type: string
+            enum: [good, neutral, bad]
+          example: "good"
+        - name: eventType
+          in: path
+          required: true
+          description: Event type to filter by
+          schema:
+            type: string
+          example: "staking.Rewarded"
+      responses:
+        '200':
+          description: List of filtered events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+        '404':
+          description: Events not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/validators/{type}/events/blocks/{start}/{end}:
+    get:
+      summary: Get Validator Events by Block Range
+      description: Retrieve events for a validator within a specific block range
+      tags:
+        - Validators
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Validator type
+          schema:
+            type: string
+            enum: [good, neutral, bad]
+          example: "good"
+        - name: start
+          in: path
+          required: true
+          description: Start block number
+          schema:
+            type: integer
+            minimum: 0
+          example: 112000
+        - name: end
+          in: path
+          required: true
+          description: End block number
+          schema:
+            type: integer
+            minimum: 0
+          example: 112100
+      responses:
+        '200':
+          description: List of events in block range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+        '400':
+          description: Invalid block range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Events not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/validators/{type}/stats:
+    get:
+      summary: Get Validator Statistics
+      description: Retrieve statistics for a specific validator
+      tags:
+        - Validators
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Validator type
+          schema:
+            type: string
+            enum: [good, neutral, bad]
+          example: "good"
+      responses:
+        '200':
+          description: Validator statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidatorStatsResponse'
+        '404':
+          description: Validator not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/events:
+    get:
+      summary: Get All Events
+      description: Retrieve all events across all validators
+      tags:
+        - Events
+      responses:
+        '200':
+          description: List of all events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+
+  /api/v1/events/{eventType}:
+    get:
+      summary: Get Events by Type
+      description: Retrieve all events of a specific type
+      tags:
+        - Events
+      parameters:
+        - name: eventType
+          in: path
+          required: true
+          description: Event type to filter by
+          schema:
+            type: string
+          example: "staking.Rewarded"
+      responses:
+        '200':
+          description: List of events by type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+        '404':
+          description: Events not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/events/blocks/{start}/{end}:
+    get:
+      summary: Get Events by Block Range
+      description: Retrieve all events within a specific block range
+      tags:
+        - Events
+      parameters:
+        - name: start
+          in: path
+          required: true
+          description: Start block number
+          schema:
+            type: integer
+            minimum: 0
+          example: 112000
+        - name: end
+          in: path
+          required: true
+          description: End block number
+          schema:
+            type: integer
+            minimum: 0
+          example: 112100
+      responses:
+        '200':
+          description: List of events in block range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+        '400':
+          description: Invalid block range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Events not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/events/category/{category}:
+    get:
+      summary: Get Events by Category
+      description: Retrieve all events of a specific category
+      tags:
+        - Events
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: Event category
+          schema:
+            type: string
+            enum: [staking, governance, online, offence, other]
+          example: "staking"
+      responses:
+        '200':
+          description: List of events by category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+        '404':
+          description: Events not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/events/validator/{stash}:
+    get:
+      summary: Get Events by Validator Stash
+      description: Retrieve all events for a specific validator by stash address
+      tags:
+        - Events
+      parameters:
+        - name: stash
+          in: path
+          required: true
+          description: Validator stash address
+          schema:
+            type: string
+          example: "5F3sa2TJc...Good"
+      responses:
+        '200':
+          description: List of events for validator
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+        '404':
+          description: Events not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/events/stats:
+    get:
+      summary: Get Event Statistics
+      description: Retrieve statistics about all events
+      tags:
+        - Events
+      responses:
+        '200':
+          description: Event statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventStatsResponse'
+
+components:
+  schemas:
+    Validator:
+      type: object
+      properties:
+        stash:
+          type: string
+          description: Validator stash address
+          example: "5F3sa2TJc...Good"
+        type:
+          type: string
+          enum: [good, neutral, bad]
+          description: Validator type
+          example: "good"
+        description:
+          type: string
+          description: Validator description
+          example: "Active every session, regular voter and delegate, always online, no slashes, earns consistent rewards, participates in governance"
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+          description: List of events associated with this validator
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2024-01-01T00:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2024-01-01T12:00:00Z"
+      required:
+        - stash
+        - type
+        - description
+        - events
+        - created_at
+        - updated_at
+
+    Event:
+      type: object
+      properties:
+        block:
+          type: integer
+          description: Block number where the event occurred
+          example: 112053
+        event:
+          type: string
+          description: Event type
+          example: "imOnline.AllGood"
+        data:
+          type: object
+          description: Event data
+          example: {}
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+          example: "2024-01-01T12:00:00Z"
+        hash:
+          type: string
+          description: Event hash (optional)
+          example: "0x1234567890abcdef"
+      required:
+        - block
+        - event
+        - data
+        - timestamp
+
+    ValidatorStats:
+      type: object
+      properties:
+        total_events:
+          type: integer
+          description: Total number of events
+          example: 25
+        total_rewards:
+          type: integer
+          description: Total rewards earned
+          example: 44991087653
+        is_active:
+          type: boolean
+          description: Whether the validator is currently active
+          example: true
+        has_been_slashed:
+          type: boolean
+          description: Whether the validator has been slashed
+          example: false
+        event_categories:
+          type: object
+          description: Count of events by category
+          example:
+            staking: 10
+            governance: 8
+            online: 5
+            offence: 0
+            other: 2
+
+    EventStats:
+      type: object
+      properties:
+        total_events:
+          type: integer
+          description: Total number of events
+          example: 75
+        events_by_type:
+          type: object
+          description: Count of events by type
+          example:
+            "staking.Rewarded": 15
+            "imOnline.HeartbeatReceived": 12
+            "democracy.Voted": 8
+        events_by_category:
+          type: object
+          description: Count of events by category
+          example:
+            staking: 30
+            governance: 20
+            online: 15
+            offence: 5
+            other: 5
+        block_range:
+          type: object
+          properties:
+            min_block:
+              type: integer
+              description: Minimum block number
+              example: 112000
+            max_block:
+              type: integer
+              description: Maximum block number
+              example: 114100
+
+    # Response schemas
+    ValidatorsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Validator'
+
+    ValidatorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Validator'
+
+    EventsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+
+    ValidatorStatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/ValidatorStats'
+
+    EventStatsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/EventStats'
+
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "healthy"
+            service:
+              type: string
+              example: "blockchain-data-api"
+            version:
+              type: string
+              example: "1.0.0"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 404
+            message:
+              type: string
+              example: "Validator not found"
+            details:
+              type: string
+              example: "The requested validator could not be found"
+
+tags:
+  - name: Validators
+    description: Operations related to blockchain validators
+  - name: Events
+    description: Operations related to blockchain events
+  - name: System
+    description: System operations like health checks 

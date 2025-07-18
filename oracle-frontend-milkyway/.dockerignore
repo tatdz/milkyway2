@@ -1,0 +1,16 @@
+.git
+.gitignore
+README.md
+.env
+.env.local
+.env.production.local
+.env.development.local
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.next
+.vercel
+.DS_Store
+*.tsbuildinfo 
