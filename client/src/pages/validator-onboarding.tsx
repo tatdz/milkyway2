@@ -150,15 +150,6 @@ export default function ValidatorOnboarding() {
       return;
     }
 
-    if (!isConnected || !account) {
-      toast({
-        title: "SubWallet Required",
-        description: "Please connect your SubWallet to send messages.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       // Encrypt the message
       const ciphertext = await encryptMessage(message, keys.symmetricKey);
@@ -167,48 +158,93 @@ export default function ValidatorOnboarding() {
       const signature = await signMessage(ciphertext, keys.signingPrivateKey);
       
       let transactionHash = "";
+      let senderAddress = "anonymous_validator";
       
+      // Test SubWallet connection if blockchain mode is enabled
       if (useBlockchain) {
-        // Submit to Passet chain via SubWallet
         try {
-          await contract.connect(account);
-          transactionHash = await contract.postMessage(ciphertext, signature);
-          setContractTxHash(transactionHash);
-          
-          toast({
-            title: "SubWallet Transaction Successful",
-            description: `Message posted to Passet chain. TX: ${transactionHash.slice(0, 10)}...`,
-          });
+          // Test SubWallet availability and connection
+          if (typeof window !== 'undefined') {
+            const { web3Enable, web3Accounts } = await import("@polkadot/extension-dapp");
+            
+            // Try to enable SubWallet specifically
+            const extensions = await web3Enable("Milkyway2");
+            
+            if (extensions.length === 0) {
+              throw new Error("No Polkadot extensions found. Please install SubWallet.");
+            }
+            
+            const accounts = await web3Accounts();
+            
+            if (accounts.length === 0) {
+              throw new Error("No accounts found. Please create an account in SubWallet.");
+            }
+            
+            const subwalletAccount = accounts[0];
+            senderAddress = subwalletAccount.address;
+            
+            // Try to connect and submit to Passet chain
+            await contract.connect(subwalletAccount);
+            transactionHash = await contract.postMessage(ciphertext, signature);
+            setContractTxHash(transactionHash);
+            
+            toast({
+              title: "SubWallet Transaction Successful",
+              description: `Message posted via SubWallet. TX: ${transactionHash.slice(0, 10)}...`,
+            });
+          } else {
+            throw new Error("Browser environment not available");
+          }
         } catch (error) {
           console.error("SubWallet transaction failed:", error);
           
-          // Show specific error message
+          // Fallback simulation mode
           const errorMessage = error instanceof Error ? error.message : "Unknown error";
+          console.log("Using fallback simulation mode:", errorMessage);
+          
+          // Create simulated transaction hash
+          transactionHash = `sim_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          
+          // Use connected account address if available, otherwise demo address
+          if (isConnected && account) {
+            senderAddress = account.address;
+          } else {
+            senderAddress = "5Demo" + Math.random().toString(36).substr(2, 44) + "ValidatorAddress";
+          }
+          
           toast({
-            title: "SubWallet Transaction Failed",
-            description: `Error: ${errorMessage}. Falling back to database storage.`,
+            title: "Simulation Mode",
+            description: `SubWallet unavailable. Message saved in simulation mode. Error: ${errorMessage}`,
             variant: "destructive",
           });
-          
-          // Fall back to database storage
-          transactionHash = `db_fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         }
       } else {
-        // Generate transaction hash for database storage
-        transactionHash = `db_storage_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        // Database-only mode
+        transactionHash = `db_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        if (isConnected && account) {
+          senderAddress = account.address;
+        }
       }
 
-      // Store in database
+      // Always store in database for message feed
       await submitMessageMutation.mutateAsync({
         ciphertext,
         signature,
-        senderAddress: account.address,
+        senderAddress,
         transactionHash,
         groupKeyId,
       });
 
       // Clear message after successful submission
       setMessage("");
+      
+      if (!useBlockchain) {
+        toast({
+          title: "Message Stored",
+          description: "Encrypted message saved to database successfully.",
+        });
+      }
       
     } catch (error) {
       console.error("Message submission failed:", error);
@@ -241,15 +277,22 @@ export default function ValidatorOnboarding() {
         </p>
       </div>
 
-      {!isConnected && (
-        <Card className="bg-slate-850 border-slate-800">
-          <CardContent className="p-6 text-center">
-            <Shield className="w-12 h-12 text-warning mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-slate-50 mb-2">SubWallet Connection Required</h3>
-            <p className="text-slate-400">Please connect your SubWallet to access validator messaging features and submit to Passet chain.</p>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="bg-slate-850 border-slate-800 mb-6">
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-3">
+            <Shield className="w-6 h-6 text-blue-400" />
+            <div>
+              <h4 className="font-medium text-slate-50">SubWallet Integration Status</h4>
+              <p className="text-sm text-slate-400">
+                {isConnected 
+                  ? `Connected to ${account?.meta?.name || "SubWallet"} (${account?.address?.slice(0, 8)}...)` 
+                  : "Messaging works with or without SubWallet. Enable blockchain mode to test SubWallet connection."
+                }
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="keys" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 bg-slate-800">
@@ -349,7 +392,7 @@ export default function ValidatorOnboarding() {
                     className="rounded"
                   />
                   <Label htmlFor="useBlockchain" className="text-sm text-slate-300">
-                    Submit to Passet blockchain via SubWallet (requires funded wallet)
+                    Test SubWallet connection & submit to Passet blockchain (with fallback)
                   </Label>
                 </div>
                 
@@ -380,7 +423,12 @@ export default function ValidatorOnboarding() {
                     className="bg-primary hover:bg-indigo-700"
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    {submitMessageMutation.isPending ? "Submitting..." : useBlockchain ? "Submit via SubWallet" : "Submit to Database"}
+                    {submitMessageMutation.isPending 
+                      ? "Submitting..." 
+                      : useBlockchain 
+                        ? "Test SubWallet & Submit" 
+                        : "Submit to Database"
+                    }
                   </Button>
                 </div>
                 
