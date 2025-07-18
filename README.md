@@ -36,6 +36,12 @@ Milkyway2 is a cutting-edge Web3 application designed for transparent, privacy-p
 - **Polkadot.js Compatibility**: Full support for Polkadot.js extension
 - **Persistent Sessions**: Secure wallet connections with localStorage management
 
+### 🔍 Validator Events Oracle
+- **Real-Time Event Monitoring**: Comprehensive tracking of validator events across Polkadot, Kusama, and parachains
+- **Multi-Chain Coverage**: Monitor validator activity across the entire Polkadot ecosystem
+- **Performance Analytics**: Detailed event logs, metrics, and incident tracking
+- **Oracle Interface**: [Access the Validator Events Oracle →](https://oracle-frontend-milkyway.fly.dev/)
+
 ## 🚀 Quick Start
 
 ### Prerequisites

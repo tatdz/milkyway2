@@ -20,6 +20,11 @@ Preferred communication style: Simple, everyday language.
 - ✓ Updated all messaging to include cross-chain support (Polkadot, Kusama, parachains)
 - ✓ Cleaned all sensitive wallet addresses and private keys from documentation
 - ✓ Simplified README installation process (no database setup required)
+- ✓ Fixed wallet connection error in header by properly accessing account.address property
+- ✓ Resolved React Promise rendering error in message unlocking with async decryption using useEffect
+- ✓ Added validator events oracle button on Dashboard page linking to https://oracle-frontend-milkyway.fly.dev/
+- ✓ Enhanced documentation with validator events oracle section and comprehensive feature coverage
+- ✓ Updated README with validator events oracle information and multi-chain monitoring details
 
 ## System Architecture
 
