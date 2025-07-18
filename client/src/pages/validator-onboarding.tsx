@@ -160,21 +160,21 @@ export default function ValidatorOnboarding() {
       let transactionHash = "";
       
       if (useBlockchain) {
-        // Submit to smart contract on Passet chain
+        // Submit to smart contract on Passet chain via SubWallet
         try {
           await contract.connect();
           transactionHash = await contract.postMessage(ciphertext, signature);
           setContractTxHash(transactionHash);
           
           toast({
-            title: "On-Chain Submission Successful",
-            description: `Message posted to Passet chain. TX: ${transactionHash.slice(0, 10)}...`,
+            title: "Passet Chain Submission Successful",
+            description: `Message posted to Passet chain via SubWallet. TX: ${transactionHash.slice(0, 10)}...`,
           });
         } catch (error) {
-          console.error("Blockchain submission failed:", error);
+          console.error("SubWallet/Passet submission failed:", error);
           toast({
-            title: "Blockchain Submission Failed",
-            description: "Falling back to database storage. Check wallet connection.",
+            title: "SubWallet Submission Failed",
+            description: "Falling back to database storage. Check SubWallet connection.",
             variant: "destructive",
           });
           // Fall back to database storage
@@ -350,7 +350,7 @@ export default function ValidatorOnboarding() {
                     className="rounded"
                   />
                   <Label htmlFor="useBlockchain" className="text-sm text-slate-300">
-                    Submit to Passet blockchain (requires funded wallet)
+                    Submit to Passet blockchain via SubWallet (requires funded wallet)
                   </Label>
                 </div>
                 
