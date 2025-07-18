@@ -140,28 +140,45 @@ export default function ValidatorOnboarding() {
   };
 
   const handleSubmitMessage = async () => {
-    console.log("Submit message clicked");
+    console.log("Submit message clicked - starting validation");
     
-    if (!keys || !message.trim()) {
+    if (!keys) {
+      console.log("No keys available");
       toast({
-        title: "Missing Requirements",
-        description: "Please generate keys and enter a message.",
+        title: "Missing Keys",
+        description: "Please generate cryptographic keys first.",
         variant: "destructive",
       });
       return;
     }
 
+    if (!message.trim()) {
+      console.log("No message content");
+      toast({
+        title: "Missing Message",
+        description: "Please enter a message to submit.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("Validation passed, starting encryption...");
+
     try {
-      console.log("Encrypting message...");
+      // Simple encryption and signing
+      console.log("Encrypting message with key:", keys.symmetricKey.slice(0, 10) + "...");
       const ciphertext = await encryptMessage(message, keys.symmetricKey);
-      const signature = await signMessage(ciphertext, keys.signingPrivateKey);
+      console.log("Message encrypted successfully");
       
-      let transactionHash = "";
+      const signature = await signMessage(ciphertext, keys.signingPrivateKey);
+      console.log("Message signed successfully");
+      
+      let transactionHash = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       let senderAddress = "anonymous_validator";
-      let walletMode = "database";
       
       // Try SubWallet if blockchain mode enabled
       if (useBlockchain) {
+        console.log("Blockchain mode enabled, testing SubWallet...");
         try {
           const { web3Enable, web3Accounts } = await import("@polkadot/extension-dapp");
           const extensions = await web3Enable("Milkyway2");
@@ -171,11 +188,11 @@ export default function ValidatorOnboarding() {
             if (accounts.length > 0) {
               senderAddress = accounts[0].address;
               transactionHash = `sw_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-              walletMode = "subwallet";
+              console.log("SubWallet connected:", senderAddress.slice(0, 8) + "...");
               
               toast({
                 title: "SubWallet Connected",
-                description: `Message submitted via SubWallet account: ${senderAddress.slice(0, 8)}...`,
+                description: `Message submitted via SubWallet`,
               });
             } else {
               throw new Error("No accounts in SubWallet");
@@ -186,22 +203,22 @@ export default function ValidatorOnboarding() {
         } catch (error) {
           console.log("SubWallet fallback:", error);
           transactionHash = `fallback_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          walletMode = "fallback";
           
           toast({
             title: "Fallback Mode",
-            description: "SubWallet unavailable. Message saved in fallback mode.",
-            variant: "destructive",
+            description: "SubWallet unavailable. Using fallback mode.",
           });
         }
-      } else {
-        transactionHash = `db_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       }
 
-      // Always save to database
-      console.log("Saving message:", { walletMode, senderAddress });
+      console.log("Submitting to database:", { 
+        ciphertext: ciphertext.slice(0, 20) + "...", 
+        senderAddress, 
+        transactionHash,
+        groupKeyId 
+      });
       
-      await submitMessageMutation.mutateAsync({
+      const result = await submitMessageMutation.mutateAsync({
         ciphertext,
         signature,
         senderAddress,
@@ -209,20 +226,18 @@ export default function ValidatorOnboarding() {
         groupKeyId,
       });
 
-      setMessage("");
+      console.log("Submission successful:", result);
       
-      if (walletMode === "database") {
-        toast({
-          title: "Message Saved",
-          description: "Encrypted message stored successfully.",
-        });
-      }
+      toast({
+        title: "Message Submitted",
+        description: "Encrypted message saved successfully.",
+      });
       
     } catch (error) {
-      console.error("Submit failed:", error);
+      console.error("Submit failed with error:", error);
       toast({
         title: "Submit Failed",
-        description: "Could not submit message. Please try again.",
+        description: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive",
       });
     }
@@ -389,14 +404,55 @@ export default function ValidatorOnboarding() {
                     </div>
                   </div>
 
-                  <Button 
-                    onClick={handleSubmitMessage}
-                    disabled={!keys || !message.trim() || submitMessageMutation.isPending}
-                    className="bg-primary hover:bg-indigo-700"
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    {submitMessageMutation.isPending ? "Submitting..." : "Submit Message"}
-                  </Button>
+                  <div className="space-x-2">
+                    <Button 
+                      onClick={() => {
+                        console.log("Button clicked - starting handleSubmitMessage");
+                        handleSubmitMessage().catch(err => console.error("Submit error:", err));
+                      }}
+                      disabled={!keys || !message.trim() || submitMessageMutation.isPending}
+                      className="bg-primary hover:bg-indigo-700"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      {submitMessageMutation.isPending ? "Submitting..." : "Submit Message"}
+                    </Button>
+                    
+                    <Button 
+                      onClick={async () => {
+                        console.log("Quick test button clicked");
+                        try {
+                          const testData = {
+                            ciphertext: "quick_test_" + Date.now(),
+                            signature: "test_sig_" + Date.now(),
+                            senderAddress: "test_sender_" + Date.now(),
+                            transactionHash: "test_tx_" + Date.now(),
+                            groupKeyId: "validator-group-2025"
+                          };
+                          console.log("Sending test data:", testData);
+                          
+                          const result = await submitMessageMutation.mutateAsync(testData);
+                          console.log("Test submission successful:", result);
+                          
+                          toast({
+                            title: "Test Successful",
+                            description: "Quick test message submitted.",
+                          });
+                        } catch (err) {
+                          console.error("Test error:", err);
+                          toast({
+                            title: "Test Failed",
+                            description: "Quick test failed: " + (err instanceof Error ? err.message : "Unknown error"),
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      disabled={submitMessageMutation.isPending}
+                    >
+                      Quick Test
+                    </Button>
+                  </div>
                 </div>
                 
                 {contractTxHash && (
