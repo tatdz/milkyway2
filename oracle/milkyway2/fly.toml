@@ -1,0 +1,39 @@
+# fly.toml app configuration file generated for milkyway2 on 2024-01-01T00:00:00Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = "milkyway2"
+primary_region = "iad"
+
+[build]
+
+[env]
+  PORT = "5001"
+  NODE_ENV = "production"
+  # Database configuration - you'll need to set this
+  # DATABASE_URL = "postgresql://username:password@host:port/database"
+  # Blockchain RPC URLs
+  PASSET_RPC_URL = "https://rpc.passet.network"
+
+[http_service]
+  internal_port = 5001
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 2048
+
+[processes]
+  app = "node dist/index.js" 

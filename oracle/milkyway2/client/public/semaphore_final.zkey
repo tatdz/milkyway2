@@ -1,0 +1,8 @@
+// This is a placeholder for the Semaphore circuit trusted setup key
+// In a real implementation, you would need to:
+// 1. Download the actual semaphore_final.zkey file from the Semaphore protocol
+// 2. Place it in the public directory  
+// 3. Ensure it's served correctly by the web server
+
+// The actual file would be a binary file containing the circuit's
+// trusted setup parameters for zero-knowledge proof generation
