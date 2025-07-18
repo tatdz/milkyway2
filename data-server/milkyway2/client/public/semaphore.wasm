@@ -1,0 +1,8 @@
+// This is a placeholder for the Semaphore circuit WASM file
+// In a real implementation, you would need to:
+// 1. Download the actual semaphore.wasm file from the Semaphore protocol
+// 2. Place it in the public directory
+// 3. Ensure it's served correctly by the web server
+
+// The actual file would be a compiled WebAssembly binary
+// generated from the Semaphore circuit written in Circom
