@@ -7,7 +7,7 @@ import ReferendumCard from "@/components/governance/referendum-card";
 import ZKReportModal from "@/components/reports/zk-report-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Users, AlertTriangle, CheckCircle } from "lucide-react";
+import { Shield, Users, AlertTriangle, CheckCircle, ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 export default function Dashboard() {
@@ -183,6 +183,14 @@ export default function Dashboard() {
                     <span>Powered by Semaphore ZK</span>
                   </div>
                 </div>
+                
+                <Button 
+                  className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => window.open('https://oracle-frontend-milkyway.fly.dev/', '_blank')}
+                >
+                  <ExternalLink className="w-5 h-5 mr-2" />
+                  Validator Events
+                </Button>
               </CardContent>
             </Card>
 

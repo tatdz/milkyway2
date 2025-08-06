@@ -304,6 +304,53 @@ export default function Documentation() {
           </CardContent>
         </Card>
 
+        {/* Validator Events Oracle */}
+        <Card className="bg-slate-850 border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-slate-50">Validator Events Oracle</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start space-x-3 mb-4">
+              <ExternalLink className="w-6 h-6 text-blue-400 mt-1" />
+              <div>
+                <h4 className="font-semibold text-slate-50 mb-2">Real-Time Event Monitoring</h4>
+                <p className="text-slate-300 text-sm">
+                  The Validator Events Oracle provides comprehensive real-time monitoring of validator events across 
+                  Polkadot, Kusama, and parachain networks. Access detailed event logs, performance metrics, and 
+                  incident tracking through our dedicated oracle interface.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-900 rounded-lg">
+                <h4 className="font-semibold text-slate-50 mb-2">Event Coverage</h4>
+                <p className="text-slate-300 text-sm">
+                  Tracks all critical validator events including slashing, rewards, governance participation, 
+                  commission changes, and network availability metrics.
+                </p>
+              </div>
+              <div className="p-4 bg-slate-900 rounded-lg">
+                <h4 className="font-semibold text-slate-50 mb-2">Multi-Chain Support</h4>
+                <p className="text-slate-300 text-sm">
+                  Monitors validator activity across the entire Polkadot ecosystem including relay chains 
+                  and connected parachains for comprehensive network oversight.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-4">
+              <Button 
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => window.open('https://oracle-frontend-milkyway.fly.dev/', '_blank')}
+              >
+                <ExternalLink className="w-5 h-5 mr-2" />
+                Access Validator Events Oracle
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Smart Contract Details */}
         <Card className="bg-slate-850 border-slate-800">
           <CardHeader>
