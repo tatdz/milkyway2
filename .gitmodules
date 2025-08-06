@@ -1,0 +1,3 @@
+[submodule "2nd milestone/2nd milestone/Polkadot dashboard/backend/circuits/semaphore-demo/circomlib"]
+	path = 2nd milestone/2nd milestone/Polkadot dashboard/backend/circuits/semaphore-demo/circomlib
+	url = https://github.com/tatdz/milkyway2
