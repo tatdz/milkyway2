@@ -1,8 +1,0 @@
-{
-  "type": "module",
-  "dependencies": {
-    "@semaphore-protocol/group": "^4.13.0-beta.1",
-    "@semaphore-protocol/proof": "^4.13.0-beta.1",
-    "circomlibjs": "^0.1.7"
-  }
-}

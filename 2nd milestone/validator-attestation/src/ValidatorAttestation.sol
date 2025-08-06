@@ -1,61 +1,151 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+pragma solidity ^0.8.17;
 
-import { ISemaphore } from "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-/// @title ValidatorAttestation
-/// @notice Validates Semaphore zero-knowledge proofs and tracks attestations by validators
-contract ValidatorAttestation is Ownable {
-    ISemaphore public semaphore;
-    uint256 public groupId;
+contract ValidatorAttestation {
+    using ECDSA for bytes32;
+    
+    address public immutable oracleAddress;
+    
+    enum RiskLevel { LOW, MEDIUM, HIGH }
+    
+    struct Validator {
+        address id;
+        string name;
+        uint256 riskScore;
+        uint256 commissionRate;
+        uint256 uptime;
+        bool isActive;
+    }
+    
+    struct Attestation {
+        address user;
+        address validator;
+        RiskLevel riskLevel;
+        string comment;
+        bytes32 messageHash;
+        uint256 timestamp;
+    }
+    
+    // Core mappings
+    mapping(address => Validator) public validators;
+    mapping(address => Attestation[]) public validatorAttestations;
+    mapping(address => Attestation[]) public userAttestations;
+    mapping(bytes32 => bool) public usedMessages;
+    
+    // Events
+    event ValidatorRegistered(address indexed validator, string name);
+    event AttestationSubmitted(
+        address indexed user,
+        address indexed validator,
+        RiskLevel riskLevel,
+        string comment
+    );
 
-    /// @notice Tracks used nullifiers to prevent double spends
-    mapping(uint256 => bool) public nullifiers;
-
-    /// @notice Tracks how many attestations each validator ID has
-    mapping(uint256 => uint256) public validatorAttestationCounts;
-
-    /// @notice Emitted when a validator successfully attests
-    event Attested(uint256 indexed validatorId, uint256 indexed nullifier);
-
-    /// @param _semaphore Address of deployed Semaphore contract
-    /// @param _groupId Group ID to validate proofs against
-    /// @param initialOwner Contract owner, passed to Ownable constructor
-    constructor(address _semaphore, uint256 _groupId, address initialOwner) Ownable(initialOwner) {
-        semaphore = ISemaphore(_semaphore);
-        groupId = _groupId;
+    constructor(address _oracleAddress) {
+        oracleAddress = _oracleAddress;
     }
 
-    /// @notice Submit a Semaphore zero-knowledge proof as attestation
-    /// @param proof SemaphoreProof struct defined in ISemaphore interface
-    function attest(ISemaphore.SemaphoreProof calldata proof) external {
-        require(!nullifiers[proof.nullifier], "Nullifier already used");
-
-        // Copy from calldata to memory for external contract call
-        ISemaphore.SemaphoreProof memory proofMem = proof;
-
-        // Verify the Semaphore zero-knowledge proof for given groupId
-        semaphore.verifyProof(groupId, proofMem);
-
-        // Mark nullifier as used to prevent double spending
-        nullifiers[proof.nullifier] = true;
-
-        // Increment attestation count using proof.message as validator ID
-        validatorAttestationCounts[proof.message]++;
-
-        emit Attested(proof.message, proof.nullifier);
+    // Register validator (callable by oracle only)
+    function registerValidator(
+        address validatorAddress,
+        string memory name,
+        uint256 commissionRate
+    ) external {
+        require(msg.sender == oracleAddress, "Only oracle can register");
+        validators[validatorAddress] = Validator({
+            id: validatorAddress,
+            name: name,
+            riskScore: 50, // Default medium risk
+            commissionRate: commissionRate,
+            uptime: 100, // Default 100% uptime
+            isActive: true
+        });
+        emit ValidatorRegistered(validatorAddress, name);
     }
 
-    /// @notice Update the Semaphore contract address (admin only)
-    /// @param _semaphore New Semaphore contract address
-    function updateSemaphore(address _semaphore) external onlyOwner {
-        semaphore = ISemaphore(_semaphore);
+    // Submit attestation with enhanced data
+    function attest(
+        address user,
+        address validator,
+        RiskLevel riskLevel,
+        string memory comment,
+        bytes calldata signature,
+        bytes32 messageHash
+    ) external {
+        // Verify signature
+        bytes32 ethSignedHash = keccak256(
+            abi.encodePacked("\x19Ethereum Signed Message:\n32", 
+            keccak256(abi.encodePacked(user, validator, riskLevel, comment)))
+        ).toEthSignedMessageHash();
+        
+        require(
+            ethSignedHash.recover(signature) == oracleAddress,
+            "Invalid oracle signature"
+        );
+        
+        // Prevent replay
+        require(!usedMessages[messageHash], "Message already used");
+        usedMessages[messageHash] = true;
+
+        // Create attestation
+        Attestation memory newAttestation = Attestation({
+            user: user,
+            validator: validator,
+            riskLevel: riskLevel,
+            comment: comment,
+            messageHash: messageHash,
+            timestamp: block.timestamp
+        });
+
+        // Update validator risk score (simple average for demo)
+        Validator storage v = validators[validator];
+        v.riskScore = (v.riskScore + uint256(riskLevel) * 50) / 2;
+        
+        // Store attestation
+        validatorAttestations[validator].push(newAttestation);
+        userAttestations[user].push(newAttestation);
+        
+        emit AttestationSubmitted(user, validator, riskLevel, comment);
     }
 
-    /// @notice Update the Semaphore group ID for proof validation (admin only)
-    /// @param _groupId New group ID
-    function updateGroup(uint256 _groupId) external onlyOwner {
-        groupId = _groupId;
+    // View functions for dashboard
+    function getValidatorDetails(address validator) public view returns (
+        string memory name,
+        uint256 riskScore,
+        uint256 commissionRate,
+        uint256 uptime,
+        bool isActive,
+        uint256 attestationCount
+    ) {
+        Validator memory v = validators[validator];
+        return (
+            v.name,
+            v.riskScore,
+            v.commissionRate,
+            v.uptime,
+            v.isActive,
+            validatorAttestations[validator].length
+        );
+    }
+
+    function getValidatorAttestations(
+        address validator,
+        uint256 page,
+        uint256 pageSize
+    ) public view returns (Attestation[] memory) {
+        Attestation[] storage all = validatorAttestations[validator];
+        uint256 start = page * pageSize;
+        if (start >= all.length) return new Attestation[](0);
+        
+        uint256 end = start + pageSize > all.length ? all.length : start + pageSize;
+        Attestation[] memory pageAttestations = new Attestation[](end - start);
+        
+        for (uint256 i = start; i < end; i++) {
+            pageAttestations[i - start] = all[i];
+        }
+        
+        return pageAttestations;
     }
 }
