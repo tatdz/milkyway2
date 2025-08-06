@@ -1,0 +1,4 @@
+x[submodule "../validator-messages/lib/openzeppelin-contracts"]
+    path = ../validator-messages/lib/openzeppelin-contracts
+    url = https://github.com/...
+
