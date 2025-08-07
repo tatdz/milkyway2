@@ -1,6 +1,10 @@
-# Getting Started with Create React App
+# Prerequisites
+you need to save:
+REACT_APP_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/your key
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+REACT_APP_CONTRACT_ADDRESS=0xab7Efe5037b07436eb803aAE806EEb20FDb566F8
+
+REACT_APP_ENCRYPTION_KEY= your encryption key
 
 ## Available Scripts
 
